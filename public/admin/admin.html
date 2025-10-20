@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Backpacking Adventure</title>
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Bootstrap CSS -->
+    <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Additional CSS Files -->
+    <link rel="stylesheet" href="../assets/css/fontawesome.css">
+    <link rel="stylesheet" href="../assets/css/templatemo-574-mexant.css">
+    <link rel="stylesheet" href="../assets/css/owl.css">
+    <link rel="stylesheet" href="../assets/css/animate.css">
+    <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-mountain"></i>
+                <h2>Panel de Administración</h2>
+            </div>
+            <div class="sidebar-menu">
+                <ul>
+                    <li class="active">
+                        <a href="#">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#colors-section">
+                            <i class="fas fa-palette"></i>
+                            <span>Colores</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#typography-section">
+                            <i class="fas fa-font"></i>
+                            <span>Tipografía</span>
+                        </a>
+                    </li>
+                    <!--
+                    <li>
+                        
+                        <a href="#functions-section">
+                            <i class="fas fa-cogs"></i>
+                            <span>Funciones</span>
+                        </a>
+                        
+                    </li>
+                    -->
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Cerrar Sesión</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1>Panel de Administración</h1>
+                <div class="user-info">
+                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=1B73E8&color=fff" alt="Admin User">
+                    <span>Admin User</span>
+                </div>
+            </div>
+
+            <!-- Website Preview Section -->
+            <div class="website-preview-section">
+                <div class="section-header">
+                    <div class="section-title">Vista Previa del Sitio Web</div>
+                    <div class="preview-actions">
+                        <button class="btn-secondary" id="refresh-preview">
+                            <i class="fas fa-sync-alt"></i> Actualizar
+                        </button>
+                        <button class="btn-primary" id="view-site">
+                            <i class="fas fa-external-link-alt"></i> Ver Sitio
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="preview-container">
+                    <iframe src="../index.html" class="website-preview" id="site-preview" frameborder="0"></iframe>
+                </div>
+            </div>
+
+            <!-- Colors Configuration Section -->
+            <div class="config-section" id="colors-section">
+                <div class="section-header">
+                    <div class="section-title">Configuración de Colores</div>
+                </div>
+
+                <div class="colors-grid">
+                    <div class="color-item">
+                        <div class="color-preview" style="background-color: #43ba7f;"></div>
+                        <div class="color-info">
+                            <h4>Color 1</h4>
+                            <p>Color principal de la marca y botones (verde)</p>
+                            <div class="color-input-group">
+                                <input type="color" id="color-1" value="#43ba7f">
+                                <input type="text" id="color-1-hex" value="#43ba7f">
+                                <button class="btn-reset">Restablecer</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="color-item">
+                        <div class="color-preview" style="background-color: #ff511a;"></div>
+                        <div class="color-info">
+                            <h4>Color 2</h4>
+                            <p>Color para elementos destacados (naranja)</p>
+                            <div class="color-input-group">
+                                <input type="color" id="color-2" value="#ff511a">
+                                <input type="text" id="color-2-hex" value="#ff511a">
+                                <button class="btn-reset">Restablecer</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="color-item">
+                        <div class="color-preview" style="background-color: #212741;"></div>
+                        <div class="color-info">
+                            <h4>Color 3</h4>
+                            <p>Color oscuro utilizado en encabezados y texto</p>
+                            <div class="color-input-group">
+                                <input type="color" id="color-3" value="#212741">
+                                <input type="text" id="color-3-hex" value="#212741">
+                                <button class="btn-reset">Restablecer</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="color-item">
+                        <div class="color-preview" style="background-color: #ffffff; border: 1px solid #ddd;"></div>
+                        <div class="color-info">
+                            <h4>Color 4</h4>
+                            <p>Color de fondo / neutro (blanco)</p>
+                            <div class="color-input-group">
+                                <input type="color" id="color-4" value="#ffffff">
+                                <input type="text" id="color-4-hex" value="#ffffff">
+                                <button class="btn-reset">Restablecer</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="color-item">
+                        <div class="color-preview" style="background-color: #FFFFFF; border: 1px solid #ddd;"></div>
+                        <div class="color-info">
+                            <h4>Color 5</h4>
+                            <p>Color neutro / fondo</p>
+                            <div class="color-input-group">
+                                <input type="color" id="color-5" value="#FFFFFF">
+                                <input type="text" id="color-5-hex" value="#FFFFFF">
+                                <button class="btn-reset">Restablecer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table to record color changes (UI only) -->
+                <div class="colors-changes-table mt-4">
+                    <h5>Historial de cambios de color</h5>
+                    <div class="table-responsive">
+                        <table id="colors-changes" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Color 1</th>
+                                    <th>Color 2</th>
+                                    <th>Color 3</th>
+                                    <th>Color 4</th>
+                                    <th>Color 5</th>
+                                    <th>Fecha / Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Filas añadidas dinámicamente por JS (vacío por ahora) -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn-secondary">Cancelar</button>
+                    <button class="btn-primary" id="apply-colors">Aplicar Cambios</button>
+                </div>
+            </div>
+
+            <!-- Typography Configuration Section -->
+            <div class="config-section" id="typography-section">
+                <div class="section-header">
+                    <div class="section-title">Configuración de Tipografía</div>
+                </div>
+
+                <div class="typography-grid">
+                    <!-- Columna 1: Fuentes Principal y Secundaria -->
+                    <div class="typography-column">
+                        <div class="typography-item">
+                            <h4>Fuente Principal</h4>
+                            <p>Fuente para Títulos</p>
+                            <select id="primary-font" class="font-selector">
+                                <option value="Poppins" selected>Poppins</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Open Sans">Open Sans</option>
+                                <option value="Montserrat">Montserrat</option>
+                                <option value="Lato">Lato</option>
+                            </select>
+                        </div>
+
+                        <div class="typography-item">
+                            <h4>Fuente Secundaria</h4>
+                            <p>Fuente para Subtítulos y parrafos</p>
+                            <select id="secondary-font" class="font-selector">
+                                <option value="Poppins" selected>Poppins</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Open Sans">Open Sans</option>
+                                <option value="Montserrat">Montserrat</option>
+                                <option value="Playfair Display">Playfair Display</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Columna 2: Controles de Texto -->
+                    <div class="typography-column">
+                        <div class="typography-item">
+                            <h4>Tamaño de Títulos</h4>
+                            <p>Tamaño de los títulos (px)</p>
+                            <div class="size-control">
+                                <input type="range" id="title-size" min="12" max="100" value="32" step="1">
+                                <span id="title-size-value">32px</span>
+                            </div>
+                        </div>
+
+                        <div class="typography-item">
+                            <h4>Tamaño de Subtítulos</h4>
+                            <p>Tamaño de los subtítulos (px)</p>
+                            <div class="size-control">
+                                <input type="range" id="subtitle-size" min="12" max="100" value="24" step="1">
+                                <span id="subtitle-size-value">24px</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Columna 3: Peso e Importar -->
+                    <div class="typography-column">
+                        <div class="typography-item">
+                            <h4>Tamaño de Párrafos</h4>
+                            <p>Tamaño de los párrafos (px)</p>
+                            <div class="size-control">
+                                <input type="range" id="paragraph-size" min="12" max="100" value="16" step="1">
+                                <span id="paragraph-size-value">16px</span>
+                            </div>
+                        </div>
+
+                        <div class="typography-item">
+                            <h4>Importar Fuente Personalizada</h4>
+                            <p>Agrega una fuente desde Google Fonts</p>
+                            <div class="font-import">
+                                <input type="text" id="font-import-url" placeholder="Nombre de la fuente de Google Fonts">
+                            </div>
+                            <div class="font-import-actions">
+                                <button class="btn-secondary" id="import-font-btn">Importar Fuente</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="typography-preview">
+                    <h4>Vista Previa de Tipografía</h4>
+                    <div class="preview-content" id="typography-preview">
+                        <h1>Encabezado Principal</h1>
+                        <h2>Encabezado Secundario</h2>
+                        <h3>Encabezado Terciario</h3>
+                        <p>Este es un párrafo de ejemplo que muestra cómo se verá el texto con la configuración actual de tipografía. Puedes ver cómo se comporta el interlineado, el tamaño y el peso de la fuente.</p>
+                        <p class="small-text">Este es un texto más pequeño para elementos secundarios.</p>
+                    </div>
+                </div>
+
+                <!-- Table to record typography changes (UI only) -->
+                <div class="typography-changes-table mt-4">
+                    <h5>Historial de cambios de Tipografía</h5>
+                    <div class="table-responsive">
+                        <table id="typography-changes" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fuente Principal</th>
+                                    <th>Fuente Secundaria</th>
+                                    <th>Tamaño de Títulos</th>
+                                    <th>Tamaño de Subtítulos</th>
+                                    <th>Tamaño de Párrafos</th>
+                                    <th>Fecha / Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Filas añadidas dinámicamente por JS (vacío por ahora) -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn-secondary">Cancelar</button>
+                    <button class="btn-primary" id="apply-typography">Aplicar Cambios</button>
+                </div>
+            </div>
+
+            <!-- Functions Configuration Section 
+            <div class="config-section" id="functions-section">
+                <div class="section-header">
+                    <div class="section-title">Configuración de Funciones</div>
+                </div>
+
+                <div class="functions-grid">
+                    <div class="function-item">
+                        <div class="function-header">
+                            <h4>Modo Daltónico</h4>
+                            <label class="switch">
+                                <input type="checkbox" id="colorblind-mode">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <p>Activa el modo daltónico para mejorar la accesibilidad</p>
+                    </div>
+
+                    <div class="function-item">
+                        <div class="function-header">
+                            <h4>Animaciones</h4>
+                            <label class="switch">
+                                <input type="checkbox" id="animations" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <p>Habilita animaciones y transiciones</p>
+                    </div>
+
+                    <div class="function-item">
+                        <div class="function-header">
+                            <h4>Preloader</h4>
+                            <label class="switch">
+                                <input type="checkbox" id="preloader" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <p>Muestra pantalla de carga inicial</p>
+                    </div>
+
+                    <div class="function-item">
+                        <div class="function-header">
+                            <h4>Google Analytics</h4>
+                            <label class="switch">
+                                <input type="checkbox" id="analytics">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <p>Habilita seguimiento de Analytics</p>
+                    </div>
+
+                    <div class="function-item">
+                        <div class="function-header">
+                            <h4>Cookies</h4>
+                            <label class="switch">
+                                <input type="checkbox" id="cookies" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <p>Muestra aviso de cookies</p>
+                    </div>
+
+                    <div class="function-item">
+                        <div class="function-header">
+                            <h4>Formulario de Contacto</h4>
+                            <label class="switch">
+                                <input type="checkbox" id="contact-form" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <p>Habilita formulario de contacto</p>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn-secondary">Cancelar</button>
+                    <button class="btn-primary" id="apply-functions">Aplicar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+<!-- Scripts -->
+    <script src="../vendor/jquery/jquery.min.js"></script>
+    <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/isotope.min.js"></script>
+    <script src="../assets/js/owl-carousel.js"></script>
+    <script src="../assets/js/tabs.js"></script>
+    <script src="../assets/js/swiper.js"></script>
+    <script src="../assets/js/custom.js"></script>
+    <script src="admin.js"></script>
+        <script>
+        // Sync typography sliders and update preview
+        (function(){
+            const titleSlider = document.getElementById('title-size');
+            const subtitleSlider = document.getElementById('subtitle-size');
+            const paragraphSlider = document.getElementById('paragraph-size');
+            const titleValue = document.getElementById('title-size-value');
+            const subtitleValue = document.getElementById('subtitle-size-value');
+            const paragraphValue = document.getElementById('paragraph-size-value');
+            const preview = document.getElementById('typography-preview');
+
+            function applyStyles(){
+                if(!preview) return;
+                titleValue.textContent = titleSlider.value + 'px';
+                subtitleValue.textContent = subtitleSlider.value + 'px';
+                paragraphValue.textContent = paragraphSlider.value + 'px';
+
+                const h1 = preview.querySelector('h1');
+                const h2 = preview.querySelector('h2');
+                const p = preview.querySelector('p');
+                if(h1) h1.style.fontSize = titleSlider.value + 'px';
+                if(h2) h2.style.fontSize = subtitleSlider.value + 'px';
+                if(p) p.style.fontSize = paragraphSlider.value + 'px';
+            }
+
+            [titleSlider, subtitleSlider, paragraphSlider].forEach(s => {
+                if(!s) return;
+                s.addEventListener('input', applyStyles);
+            });
+
+            // Initialize
+            applyStyles();
+        })();
+        </script>
+</body>
+</html>
