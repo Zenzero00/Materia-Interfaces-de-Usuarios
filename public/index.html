@@ -543,7 +543,7 @@ https://templatemo.com/tm-574-mexant
     <script src="assets/js/tabs.js"></script>
     <script src="assets/js/swiper.js"></script>
     <script src="assets/js/custom.js"></script>
-    <script>
+  <script>
         var interleaveOffset = 0.5;
 
       var swiperOptions = {
@@ -586,6 +586,50 @@ https://templatemo.com/tm-574-mexant
       };
 
       var swiper = new Swiper(".swiper-container", swiperOptions);
+    </script>
+    <script>
+      // Apply saved admin typography settings (localStorage-only). Font import from local
+      // files/IndexedDB has been disabled. This script injects Google Fonts for the named
+      // families stored in localStorage and applies sizes/families to h2/h4/p.
+      (function(){
+        function applySavedTypography(){
+          try{
+            var raw = localStorage.getItem('admin_typography_settings');
+            if(!raw) return;
+            var s = JSON.parse(raw);
+            function inject(font){ if(!font) return; var id='gf-'+font.replace(/\s+/g,'-'); if(document.getElementById(id)) return; var link=document.createElement('link'); link.id=id; link.rel='stylesheet'; link.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(font)+':wght@300;400;500;600;700&display=swap'; document.head.appendChild(link); }
+            inject(s.primary); inject(s.secondary);
+
+            // primary -> h2, secondary -> h4 & p + body
+            if(s.primary){ document.querySelectorAll('h2').forEach(function(h){ h.style.fontFamily = s.primary + ', sans-serif'; }); }
+            if(s.secondary){ document.querySelectorAll('h4').forEach(function(h){ h.style.fontFamily = s.secondary + ', sans-serif'; }); document.querySelectorAll('p').forEach(function(p){ p.style.fontFamily = s.secondary + ', sans-serif'; }); document.body.style.fontFamily = s.secondary + ', sans-serif'; }
+
+            var titleSize = (typeof s.titleSize !== 'undefined') ? s.titleSize : 56;
+            var subtitleSize = (typeof s.subtitleSize !== 'undefined') ? s.subtitleSize : 36;
+            var paragraphSize = (typeof s.paragraphSize !== 'undefined') ? s.paragraphSize : 15;
+            document.querySelectorAll('h2').forEach(function(h){ h.style.fontSize = titleSize + 'px'; });
+            document.querySelectorAll('h4').forEach(function(h){ h.style.fontSize = subtitleSize + 'px'; });
+            document.querySelectorAll('p').forEach(function(p){ p.style.fontSize = paragraphSize + 'px'; });
+          }catch(e){ console.warn('No se pudo aplicar tipografía guardada:', e); }
+        }
+
+        applySavedTypography();
+
+        // Listen for settings-applied messages from admin and reapply
+        try{
+          if(window.BroadcastChannel){
+            const bcIdx = new BroadcastChannel('admin-typography');
+            bcIdx.addEventListener('message', function(ev){
+              try{
+                var d = ev.data || {};
+                if(d.type === 'settings-applied'){
+                  applySavedTypography();
+                }
+              }catch(e){ console.warn('bc message handler error', e); }
+            });
+          }
+        }catch(e){ /* ignore */ }
+      })();
     </script>
     <script>
       (function () {

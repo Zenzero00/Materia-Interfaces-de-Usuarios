@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - Backpacking Adventure</title>
+    <title>Panel de Administración</title>
     <link rel="stylesheet" href="admin.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -262,14 +262,8 @@
                         </div>
 
                         <div class="typography-item">
-                            <h4>Importar Fuente Personalizada</h4>
-                            <p>Agrega una fuente desde Google Fonts</p>
-                            <div class="font-import">
-                                <input type="text" id="font-import-url" placeholder="Nombre de la fuente de Google Fonts">
-                            </div>
-                            <div class="font-import-actions">
-                                <button class="btn-secondary" id="import-font-btn">Importar Fuente</button>
-                            </div>
+                            <h4>Importar Fuente (deshabilitado)</h4>
+                            <p>La importación de fuentes locales ha sido deshabilitada. Usa las listas desplegables de Fuente Principal y Secundaria para elegir fuentes disponibles.</p>
                         </div>
                     </div>
                 </div>
@@ -277,9 +271,8 @@
                 <div class="typography-preview">
                     <h4>Vista Previa de Tipografía</h4>
                     <div class="preview-content" id="typography-preview">
-                        <h1>Encabezado Principal</h1>
-                        <h2>Encabezado Secundario</h2>
-                        <h3>Encabezado Terciario</h3>
+                        <h2>Encabezado Principal</h2>
+                        <h4>Encabezado Secundario</h4>
                         <p>Este es un párrafo de ejemplo que muestra cómo se verá el texto con la configuración actual de tipografía. Puedes ver cómo se comporta el interlineado, el tamaño y el peso de la fuente.</p>
                         <p class="small-text">Este es un texto más pequeño para elementos secundarios.</p>
                     </div>
@@ -405,39 +398,5 @@
     <script src="../assets/js/swiper.js"></script>
     <script src="../assets/js/custom.js"></script>
     <script src="admin.js"></script>
-        <script>
-        // Sync typography sliders and update preview
-        (function(){
-            const titleSlider = document.getElementById('title-size');
-            const subtitleSlider = document.getElementById('subtitle-size');
-            const paragraphSlider = document.getElementById('paragraph-size');
-            const titleValue = document.getElementById('title-size-value');
-            const subtitleValue = document.getElementById('subtitle-size-value');
-            const paragraphValue = document.getElementById('paragraph-size-value');
-            const preview = document.getElementById('typography-preview');
-
-            function applyStyles(){
-                if(!preview) return;
-                titleValue.textContent = titleSlider.value + 'px';
-                subtitleValue.textContent = subtitleSlider.value + 'px';
-                paragraphValue.textContent = paragraphSlider.value + 'px';
-
-                const h1 = preview.querySelector('h1');
-                const h2 = preview.querySelector('h2');
-                const p = preview.querySelector('p');
-                if(h1) h1.style.fontSize = titleSlider.value + 'px';
-                if(h2) h2.style.fontSize = subtitleSlider.value + 'px';
-                if(p) p.style.fontSize = paragraphSlider.value + 'px';
-            }
-
-            [titleSlider, subtitleSlider, paragraphSlider].forEach(s => {
-                if(!s) return;
-                s.addEventListener('input', applyStyles);
-            });
-
-            // Initialize
-            applyStyles();
-        })();
-        </script>
 </body>
 </html>
