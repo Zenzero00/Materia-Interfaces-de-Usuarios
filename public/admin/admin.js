@@ -21,32 +21,308 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Apply colors button
     const applyColorsBtn = document.getElementById('apply-colors');
-    if (applyColorsBtn) {
-        applyColorsBtn.addEventListener('click', function() {
-                const c1 = document.getElementById('color-1')?.value;
-                const c2 = document.getElementById('color-2')?.value;
-                const c3 = document.getElementById('color-3')?.value;
-                const c4 = document.getElementById('color-4')?.value;
-                const c5 = document.getElementById('color-5')?.value;
+        if (applyColorsBtn) {
+            applyColorsBtn.addEventListener('click', function() {
+                const c1 = document.getElementById('color-1')?.value || '#43ba7f';
+                const c2 = document.getElementById('color-2')?.value || '#ff511a';
+                const c3 = document.getElementById('color-3')?.value || '#212741';
+                const c4 = document.getElementById('color-4')?.value || '#ffffff';
+                
+                // Aplicar colores al admin
                 if (c1) document.documentElement.style.setProperty('--primary-color', c1);
                 if (c2) document.documentElement.style.setProperty('--secondary-color', c2);
                 if (c3) document.documentElement.style.setProperty('--accent-color', c3);
-                if (c4) document.documentElement.style.setProperty('--danger-color', c4);
-                if (c5) document.documentElement.style.setProperty('--neutral-color', c5);
-            // persist current colors and add to history
-            try{
-                const colorSettings = { primary: c1, secondary: c2, accent: c3, danger: c4, neutral: c5 };
-                try{ localStorage.setItem('admin_color_settings', JSON.stringify(colorSettings)); }catch(e){ /* ignore */ }
-                const ch = (function load(){ try{ return JSON.parse(localStorage.getItem('admin_color_history')||'[]'); }catch(e){ return []; } })();
-                ch.push(Object.assign({}, colorSettings, { timestamp: Date.now() }));
-                try{ localStorage.setItem('admin_color_history', JSON.stringify(ch)); }catch(e){}
-                renderColorHistory();
-            }catch(e){ console.warn('No se pudo guardar colores en historial', e); }
+                if (c4) document.documentElement.style.setProperty('--neutral-color', c4);
+                
+                // Aplicar colores al iframe (página principal)
+                applyColorsToIframe({ 
+                    primary: c1,    // Botones verdes, iconos
+                    secondary: c2,  // Botones naranjas  
+                    accent: c3,     // Textos, encabezados, fondos
+                    neutral: c4     // Texto sobre botones
+                });
+                
+                // Guardar en historial
+                try{
+                    const colorSettings = { primary: c1, secondary: c2, accent: c3, neutral: c4 };
+                    localStorage.setItem('admin_color_settings', JSON.stringify(colorSettings));
+                    const ch = loadColorHistory();
+                    ch.push(Object.assign({}, colorSettings, { timestamp: Date.now() }));
+                    saveColorHistory(ch);
+                    renderColorHistory();
+                }catch(e){ console.warn('No se pudo guardar colores en historial', e); }
 
-                try{ if(window.BroadcastChannel){ const bc = new BroadcastChannel('admin-typography'); bc.postMessage({ type: 'colors-applied', colors: { primary: c1, secondary: c2, accent: c3, danger: c4, neutral: c5 } }); bc.close(); } }catch(e){}
-            alert('Colores aplicados correctamente');
-        });
-    }
+                alert('Colores aplicados correctamente');
+            });
+        }
+
+        // Función mejorada para aplicar colores al iframe
+        function applyColorsToIframe(colors) {
+            const iframe = document.getElementById('site-preview');
+            const iframeDoc = iframe?.contentDocument || iframe?.contentWindow?.document;
+            
+            if (!iframeDoc) return;
+            
+            // Aplicar variables CSS al iframe
+            if (colors.primary) iframeDoc.documentElement.style.setProperty('--primary-color', colors.primary);
+            if (colors.secondary) iframeDoc.documentElement.style.setProperty('--secondary-color', colors.secondary);
+            if (colors.accent) iframeDoc.documentElement.style.setProperty('--accent-color', colors.accent);
+            if (colors.neutral) iframeDoc.documentElement.style.setProperty('--neutral-color', colors.neutral);
+            
+            // Aplicar colores específicos a elementos
+            applyColorsToElements(iframeDoc, colors);
+        }
+
+        // Función mejorada para aplicar colores a elementos específicos
+        function applyColorsToElements(doc, colors) {
+            if (!doc) return;
+            
+            // ===== COLOR 1 (PRIMARY) - Botones verdes e iconos =====
+            
+            // Botones "Discover More" (verdes)
+            const greenButtons = doc.querySelectorAll('.green-button a');
+            greenButtons.forEach(btn => {
+                if (colors.primary) btn.style.backgroundColor = colors.primary;
+                if (colors.neutral) btn.style.color = colors.neutral;
+                btn.style.border = 'none';
+            });
+            
+            // Botón "Contact Support" en el header
+            const headerContactBtn = doc.querySelector('.header-area .main-nav .nav li:last-child a');
+            if (headerContactBtn) {
+                if (colors.primary) headerContactBtn.style.backgroundColor = colors.primary;
+                if (colors.neutral) headerContactBtn.style.color = colors.neutral;
+            }
+            
+            // Iconos de servicios
+            const serviceIcons = doc.querySelectorAll('.services .service-item i');
+            serviceIcons.forEach(icon => {
+                if (colors.primary) icon.style.color = colors.primary;
+            });
+            
+            // ===== COLOR 2 (SECONDARY) - Botones naranjas =====
+            
+            // Botones "Contact Us" (naranjas)
+            const orangeButtons = doc.querySelectorAll('.orange-button a');
+            orangeButtons.forEach(btn => {
+                if (colors.secondary) btn.style.backgroundColor = colors.secondary;
+                if (colors.neutral) btn.style.color = colors.neutral;
+                btn.style.border = 'none';
+            });
+            
+            // ===== COLOR 3 (ACCENT) - Textos, encabezados y fondos =====
+            
+            // Encabezados principales
+            const mainHeadings = doc.querySelectorAll('h1, h2, h3, h4, h5, h6');
+            mainHeadings.forEach(heading => {
+                if (colors.accent) heading.style.color = colors.accent;
+            });
+            
+            // Texto del banner principal
+            const bannerText = doc.querySelectorAll('.header-text h2, .header-text p');
+            bannerText.forEach(text => {
+                if (colors.neutral) text.style.color = colors.neutral;
+            });
+            
+            // Línea decorativa del banner
+            const bannerLine = doc.querySelectorAll('.div-dec');
+            bannerLine.forEach(line => {
+                if (colors.neutral) line.style.backgroundColor = colors.neutral;
+            });
+            
+            // Texto de servicios
+            const serviceText = doc.querySelectorAll('.service-item h4, .service-item p');
+            serviceText.forEach(text => {
+                if (colors.accent) text.style.color = colors.accent;
+            });
+            
+            // ===== FONDOS DE SECCIONES =====
+            
+            // Fondo del header
+            const headerArea = doc.querySelector('.header-area');
+            if (headerArea && colors.accent) {
+                headerArea.style.backgroundImage = 'none';
+                headerArea.style.backgroundColor = colors.accent;
+            }
+            
+            // Fondo del footer
+            const footer = doc.querySelector('footer');
+            if (footer && colors.accent) {
+                footer.style.backgroundColor = colors.accent;
+            }
+            
+            // Fondo de la sección partners
+            const partners = doc.querySelector('.partners');
+            if (partners && colors.accent) {
+                partners.style.backgroundColor = colors.accent;
+            }
+            
+            // Fondo de la sección simple-cta
+            const simpleCta = doc.querySelector('.simple-cta');
+            if (simpleCta && colors.accent) {
+                simpleCta.style.backgroundImage = 'none';
+                simpleCta.style.backgroundColor = colors.accent;
+            }
+            
+            // Fondo de la sección calculator (formularios)
+            const calculator = doc.querySelector('.calculator');
+            if (calculator && colors.accent) {
+                calculator.style.backgroundImage = 'none';
+                calculator.style.backgroundColor = colors.accent;
+            }
+            
+            // Fondo de las tarjetas de servicios
+            const serviceItems = doc.querySelectorAll('.service-item');
+            serviceItems.forEach(item => {
+                if (colors.neutral) {
+                    item.style.backgroundColor = colors.neutral;
+                    item.style.boxShadow = `0px 0px 15px ${colors.accent}20`;
+                }
+            });
+            
+            // Fondo del body
+            const body = doc.body;
+            if (body && colors.neutral) {
+                body.style.backgroundColor = colors.neutral;
+            }
+            
+            // ===== TEXTOS ESPECÍFICOS (span, em, strong) =====
+            
+            // Elementos em en el banner
+            const emElements = doc.querySelectorAll('.header-text em');
+            emElements.forEach(em => {
+                if (colors.secondary) em.style.color = colors.secondary;
+            });
+            
+            // Elementos strong en el banner
+            const strongElements = doc.querySelectorAll('.header-text strong');
+            strongElements.forEach(strong => {
+                if (colors.secondary) strong.style.color = colors.secondary;
+            });
+            
+            // Elementos span con color específico (como en testimonials)
+            const coloredSpans = doc.querySelectorAll('.testimonials span, .about-us span.item-title');
+            coloredSpans.forEach(span => {
+                if (colors.primary) span.style.color = colors.primary;
+            });
+            
+            // ===== FORMULARIOS =====
+            
+            // Formularios de login y registro
+            const forms = doc.querySelectorAll('#create-account, #login');
+            forms.forEach(form => {
+                if (colors.neutral) {
+                    form.style.backgroundColor = colors.neutral;
+                }
+                if (colors.accent) {
+                    form.style.border = `1px solid ${colors.accent}30`;
+                }
+            });
+            
+            // Inputs de formularios
+            const formInputs = doc.querySelectorAll('#create-account input, #login input, #create-account select, #login select');
+            formInputs.forEach(input => {
+                if (colors.neutral) {
+                    input.style.backgroundColor = colors.neutral;
+                }
+                if (colors.accent) {
+                    input.style.borderColor = colors.accent;
+                    input.style.color = colors.accent;
+                }
+            });
+            
+            // Labels de formularios
+            const formLabels = doc.querySelectorAll('#create-account label, #login label');
+            formLabels.forEach(label => {
+                if (colors.accent) label.style.color = colors.accent;
+            });
+            
+            // Botón "Crear Cuenta" (primary)
+            const createAccountBtn = doc.querySelector('#create-account button[type="submit"]');
+            if (createAccountBtn) {
+                if (colors.primary) createAccountBtn.style.backgroundColor = colors.primary;
+                if (colors.neutral) createAccountBtn.style.color = colors.neutral;
+                createAccountBtn.style.border = 'none';
+            }
+            
+            // Botón "Iniciar Sesión" (secondary)
+            const loginBtn = doc.querySelector('#login button[type="submit"]');
+            if (loginBtn) {
+                if (colors.secondary) loginBtn.style.backgroundColor = colors.secondary;
+                if (colors.neutral) loginBtn.style.color = colors.neutral;
+                loginBtn.style.border = 'none';
+            }
+            
+            // ===== ELEMENTOS ADICIONALES =====
+            
+            // Texto del footer
+            const footerText = doc.querySelectorAll('footer p');
+            footerText.forEach(text => {
+                if (colors.neutral) text.style.color = colors.neutral;
+            });
+            
+            // Enlaces del footer
+            const footerLinks = doc.querySelectorAll('footer a');
+            footerLinks.forEach(link => {
+                if (colors.secondary) link.style.color = colors.secondary;
+            });
+            
+            // Navegación del header
+            const navLinks = doc.querySelectorAll('.header-area .main-nav .nav li a');
+            navLinks.forEach(link => {
+                if (colors.neutral) link.style.color = colors.neutral;
+            });
+            
+            // Logo (si es texto)
+            const logo = doc.querySelector('.header-area .logo');
+            if (logo && !logo.querySelector('img') && colors.neutral) {
+                logo.style.color = colors.neutral;
+            }
+            
+            // Sección de testimonios
+            const testimonialIcons = doc.querySelectorAll('.testimonials .fa-quote-left');
+            testimonialIcons.forEach(icon => {
+                if (colors.primary) {
+                    icon.style.backgroundColor = colors.primary;
+                    icon.style.color = colors.neutral;
+                }
+            });
+            
+            // Nombres en testimonios
+            const testimonialNames = doc.querySelectorAll('.testimonials h4');
+            testimonialNames.forEach(name => {
+                if (colors.accent) name.style.color = colors.accent;
+            });
+            
+            // Texto de testimonios
+            const testimonialText = doc.querySelectorAll('.testimonials p');
+            testimonialText.forEach(text => {
+                if (colors.accent) text.style.color = colors.accent;
+            });
+            
+            // Fondo de testimonios
+            const testimonialItems = doc.querySelectorAll('.testimonials .item');
+            testimonialItems.forEach(item => {
+                if (colors.neutral) item.style.backgroundColor = colors.neutral;
+            });
+            
+            // Sección about us
+            const aboutUsItems = doc.querySelectorAll('.about-us .gradient-border');
+            aboutUsItems.forEach(item => {
+                if (colors.neutral) item.style.backgroundColor = colors.neutral;
+                if (colors.accent) item.style.color = colors.accent;
+            });
+            
+            // Tablas en about us
+            const aboutUsTables = doc.querySelectorAll('.about-us .main-list, .about-us .list-item');
+            aboutUsTables.forEach(table => {
+                if (colors.neutral) table.style.backgroundColor = colors.neutral;
+                if (colors.accent) {
+                    table.style.color = colors.accent;
+                    table.style.borderBottomColor = `${colors.accent}20`;
+                }
+            });
+        }
 
     // ---------- Color history (similar to typography) ----------
     function loadColorHistory(){ try{ return JSON.parse(localStorage.getItem('admin_color_history')||'[]'); }catch(e){ return []; } }

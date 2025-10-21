@@ -31,12 +31,39 @@ font & reset css
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:100,200,300,400,500,600,700,800,900");
 
 /* CSS Variables for customizable colors */
+/* En la sección de variables CSS, actualiza para usar todas las variables */
 :root {
-  --primary-color: #43ba7f;
-  --secondary-color: #ff511a;
-  --accent-color: #212741;
-  --danger-color: #ffffff;
-  --neutral-color: #ffffff;
+  --primary-color: #43ba7f;    /* Color 1 - Verde */
+  --secondary-color: #ff511a;  /* Color 2 - Naranja */  
+  --accent-color: #212741;     /* Color 3 - Azul oscuro */
+  --danger-color: #ffffff;     /* Color 4 - Blanco */
+  --neutral-color: #ffffff;    /* Color 5 - Blanco (puedes cambiarlo) */
+}
+
+/* Asegurar que todos los elementos usen las variables */
+.green-button a {
+  background-color: var(--primary-color);
+  color: var(--neutral-color);
+}
+
+.orange-button a {
+  background-color: var(--secondary-color);
+}
+
+.services .service-item i {
+  color: var(--primary-color);
+}
+
+h1, h2, h3, h4, h5, h6, .section-heading h4 {
+  color: var(--accent-color);
+}
+
+p {
+  color: var(--accent-color);
+}
+
+.header-area, footer, .partners {
+  background-color: var(--accent-color);
 }
 /* 
 ---------------------------------------------

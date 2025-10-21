@@ -778,5 +778,301 @@ https://templatemo.com/tm-574-mexant
         })();
       })();
     </script>
+    <script>
+    // Aplicar colores guardados al cargar la página
+    (function applySavedColors() {
+        try {
+            const savedColors = localStorage.getItem('admin_color_settings');
+            if (savedColors) {
+                const colors = JSON.parse(savedColors);
+                applyColorsToPage(colors);
+            }
+        } catch(e) {
+            console.warn('No se pudieron aplicar colores guardados:', e);
+        }
+    })();
+
+    // Función para aplicar colores a la página
+    function applyColorsToPage(colors) {
+        // Aplicar variables CSS
+        if (colors.primary) document.documentElement.style.setProperty('--primary-color', colors.primary);
+        if (colors.secondary) document.documentElement.style.setProperty('--secondary-color', colors.secondary);
+        if (colors.accent) document.documentElement.style.setProperty('--accent-color', colors.accent);
+        if (colors.neutral) document.documentElement.style.setProperty('--neutral-color', colors.neutral);
+        
+        // Aplicar colores a elementos específicos
+        applyColorsToElements(colors);
+    }
+
+    // Función para aplicar colores a elementos específicos
+    function applyColorsToElements(colors) {
+        // ===== COLOR 1 (PRIMARY) - Botones verdes e iconos =====
+        
+        // Botones "Discover More" (verdes)
+        const greenButtons = document.querySelectorAll('.green-button a');
+        greenButtons.forEach(btn => {
+            if (colors.primary) btn.style.backgroundColor = colors.primary;
+            if (colors.neutral) btn.style.color = colors.neutral;
+            btn.style.border = 'none';
+        });
+        
+        // Botón "Contact Support" en el header
+        const headerContactBtn = document.querySelector('.header-area .main-nav .nav li:last-child a');
+        if (headerContactBtn) {
+            if (colors.primary) headerContactBtn.style.backgroundColor = colors.primary;
+            if (colors.neutral) headerContactBtn.style.color = colors.neutral;
+        }
+        
+        // Iconos de servicios
+        const serviceIcons = document.querySelectorAll('.services .service-item i');
+        serviceIcons.forEach(icon => {
+            if (colors.primary) icon.style.color = colors.primary;
+        });
+        
+        // ===== COLOR 2 (SECONDARY) - Botones naranjas =====
+        
+        // Botones "Contact Us" (naranjas)
+        const orangeButtons = document.querySelectorAll('.orange-button a');
+        orangeButtons.forEach(btn => {
+            if (colors.secondary) btn.style.backgroundColor = colors.secondary;
+            if (colors.neutral) btn.style.color = colors.neutral;
+            btn.style.border = 'none';
+        });
+        
+        // ===== COLOR 3 (ACCENT) - Textos, encabezados y fondos =====
+        
+        // Encabezados principales
+        const mainHeadings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        mainHeadings.forEach(heading => {
+            if (colors.accent) heading.style.color = colors.accent;
+        });
+        
+        // Texto del banner principal
+        const bannerText = document.querySelectorAll('.header-text h2, .header-text p');
+        bannerText.forEach(text => {
+            if (colors.neutral) text.style.color = colors.neutral;
+        });
+        
+        // Línea decorativa del banner
+        const bannerLine = document.querySelectorAll('.div-dec');
+        bannerLine.forEach(line => {
+            if (colors.neutral) line.style.backgroundColor = colors.neutral;
+        });
+        
+        // Texto de servicios
+        const serviceText = document.querySelectorAll('.service-item h4, .service-item p');
+        serviceText.forEach(text => {
+            if (colors.accent) text.style.color = colors.accent;
+        });
+        
+        // ===== FONDOS DE SECCIONES =====
+        
+        // Fondo del header
+        const headerArea = document.querySelector('.header-area');
+        if (headerArea && colors.accent) {
+            headerArea.style.backgroundImage = 'none';
+            headerArea.style.backgroundColor = colors.accent;
+        }
+        
+        // Fondo del footer
+        const footer = document.querySelector('footer');
+        if (footer && colors.accent) {
+            footer.style.backgroundColor = colors.accent;
+        }
+        
+        // Fondo de la sección partners
+        const partners = document.querySelector('.partners');
+        if (partners && colors.accent) {
+            partners.style.backgroundColor = colors.accent;
+        }
+        
+        // Fondo de la sección simple-cta
+        const simpleCta = document.querySelector('.simple-cta');
+        if (simpleCta && colors.accent) {
+            simpleCta.style.backgroundImage = 'none';
+            simpleCta.style.backgroundColor = colors.accent;
+        }
+        
+        // Fondo de la sección calculator (formularios)
+        const calculator = document.querySelector('.calculator');
+        if (calculator && colors.accent) {
+            calculator.style.backgroundImage = 'none';
+            calculator.style.backgroundColor = colors.accent;
+        }
+        
+        // Fondo de las tarjetas de servicios
+        const serviceItems = document.querySelectorAll('.service-item');
+        serviceItems.forEach(item => {
+            if (colors.neutral) {
+                item.style.backgroundColor = colors.neutral;
+                item.style.boxShadow = `0px 0px 15px ${colors.accent}20`;
+            }
+        });
+        
+        // Fondo del body
+        const body = document.body;
+        if (body && colors.neutral) {
+            body.style.backgroundColor = colors.neutral;
+        }
+        
+        // ===== TEXTOS ESPECÍFICOS (span, em, strong) =====
+        
+        // Elementos em en el banner
+        const emElements = document.querySelectorAll('.header-text em');
+        emElements.forEach(em => {
+            if (colors.secondary) em.style.color = colors.secondary;
+        });
+        
+        // Elementos strong en el banner
+        const strongElements = document.querySelectorAll('.header-text strong');
+        strongElements.forEach(strong => {
+            if (colors.secondary) strong.style.color = colors.secondary;
+        });
+        
+        // Elementos span con color específico (como en testimonials)
+        const coloredSpans = document.querySelectorAll('.testimonials span, .about-us span.item-title');
+        coloredSpans.forEach(span => {
+            if (colors.primary) span.style.color = colors.primary;
+        });
+        
+        // ===== FORMULARIOS =====
+        
+        // Formularios de login y registro
+        const forms = document.querySelectorAll('#create-account, #login');
+        forms.forEach(form => {
+            if (colors.neutral) {
+                form.style.backgroundColor = colors.neutral;
+            }
+            if (colors.accent) {
+                form.style.border = `1px solid ${colors.accent}30`;
+            }
+        });
+        
+        // Inputs de formularios
+        const formInputs = document.querySelectorAll('#create-account input, #login input, #create-account select, #login select');
+        formInputs.forEach(input => {
+            if (colors.neutral) {
+                input.style.backgroundColor = colors.neutral;
+            }
+            if (colors.accent) {
+                input.style.borderColor = colors.accent;
+                input.style.color = colors.accent;
+            }
+        });
+        
+        // Labels de formularios
+        const formLabels = document.querySelectorAll('#create-account label, #login label');
+        formLabels.forEach(label => {
+            if (colors.accent) label.style.color = colors.accent;
+        });
+        
+        // Botón "Crear Cuenta" (primary)
+        const createAccountBtn = document.querySelector('#create-account button[type="submit"]');
+        if (createAccountBtn) {
+            if (colors.primary) createAccountBtn.style.backgroundColor = colors.primary;
+            if (colors.neutral) createAccountBtn.style.color = colors.neutral;
+            createAccountBtn.style.border = 'none';
+        }
+        
+        // Botón "Iniciar Sesión" (secondary)
+        const loginBtn = document.querySelector('#login button[type="submit"]');
+        if (loginBtn) {
+            if (colors.secondary) loginBtn.style.backgroundColor = colors.secondary;
+            if (colors.neutral) loginBtn.style.color = colors.neutral;
+            loginBtn.style.border = 'none';
+        }
+        
+        // ===== ELEMENTOS ADICIONALES =====
+        
+        // Texto del footer
+        const footerText = document.querySelectorAll('footer p');
+        footerText.forEach(text => {
+            if (colors.neutral) text.style.color = colors.neutral;
+        });
+        
+        // Enlaces del footer
+        const footerLinks = document.querySelectorAll('footer a');
+        footerLinks.forEach(link => {
+            if (colors.secondary) link.style.color = colors.secondary;
+        });
+        
+        // Navegación del header
+        const navLinks = document.querySelectorAll('.header-area .main-nav .nav li a');
+        navLinks.forEach(link => {
+            if (colors.neutral) link.style.color = colors.neutral;
+        });
+        
+        // Logo (si es texto)
+        const logo = document.querySelector('.header-area .logo');
+        if (logo && !logo.querySelector('img') && colors.neutral) {
+            logo.style.color = colors.neutral;
+        }
+        
+        // Sección de testimonios
+        const testimonialIcons = document.querySelectorAll('.testimonials .fa-quote-left');
+        testimonialIcons.forEach(icon => {
+            if (colors.primary) {
+                icon.style.backgroundColor = colors.primary;
+                icon.style.color = colors.neutral;
+            }
+        });
+        
+        // Nombres en testimonios
+        const testimonialNames = document.querySelectorAll('.testimonials h4');
+        testimonialNames.forEach(name => {
+            if (colors.accent) name.style.color = colors.accent;
+        });
+        
+        // Texto de testimonios
+        const testimonialText = document.querySelectorAll('.testimonials p');
+        testimonialText.forEach(text => {
+            if (colors.accent) text.style.color = colors.accent;
+        });
+        
+        // Fondo de testimonios
+        const testimonialItems = document.querySelectorAll('.testimonials .item');
+        testimonialItems.forEach(item => {
+            if (colors.neutral) item.style.backgroundColor = colors.neutral;
+        });
+        
+        // Sección about us
+        const aboutUsItems = document.querySelectorAll('.about-us .gradient-border');
+        aboutUsItems.forEach(item => {
+            if (colors.neutral) item.style.backgroundColor = colors.neutral;
+            if (colors.accent) item.style.color = colors.accent;
+        });
+        
+        // Tablas en about us
+        const aboutUsTables = document.querySelectorAll('.about-us .main-list, .about-us .list-item');
+        aboutUsTables.forEach(table => {
+            if (colors.neutral) table.style.backgroundColor = colors.neutral;
+            if (colors.accent) {
+                table.style.color = colors.accent;
+                table.style.borderBottomColor = `${colors.accent}20`;
+            }
+        });
+    }
+
+    // Escuchar cambios de colores desde el admin
+    try {
+        if (window.BroadcastChannel) {
+            const bcColors = new BroadcastChannel('admin-colors');
+            bcColors.addEventListener('message', function(ev) {
+                try {
+                    const data = ev.data || {};
+                    if (data.type === 'colors-applied') {
+                        applyColorsToPage(data.colors);
+                        // Guardar en localStorage
+                        localStorage.setItem('admin_color_settings', JSON.stringify(data.colors));
+                    }
+                } catch(e) {
+                    console.warn('Error procesando mensaje de colores:', e);
+                }
+            });
+        }
+    } catch(e) {
+        console.warn('No se pudo inicializar BroadcastChannel para colores:', e);
+    }
+</script>
   </body>
 </html>
