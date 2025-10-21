@@ -382,7 +382,8 @@ https://templatemo.com/tm-574-mexant
               </div>
               <div class="col-12">
                 <label for="registerEmail" class="form-label">Correo</label>
-                <input type="email" class="form-control" id="registerEmail" name="registerEmail" required>
+                <input type="email" class="form-control" id="registerEmail" name="registerEmail" required aria-describedby="registerEmailFeedback">
+                <div id="registerEmailFeedback" class="invalid-feedback" style="display:none;color:#d9534f;margin-top:6px;">Por favor ingresa un correo válido (ej: usuario@dominio.com).</div>
               </div>
               <div class="col-md-6">
                 <label for="registerPassword" class="form-label">Contraseña</label>
@@ -416,7 +417,8 @@ https://templatemo.com/tm-574-mexant
             <div class="row g-3">
               <div class="col-12">
                 <label for="loginEmail" class="form-label">Correo</label>
-                <input type="email" class="form-control" id="loginEmail" name="loginEmail" required>
+                <input type="email" class="form-control" id="loginEmail" name="loginEmail" required aria-describedby="loginEmailFeedback">
+                <div id="loginEmailFeedback" class="invalid-feedback" style="display:none;color:#d9534f;margin-top:6px;">Por favor ingresa un correo válido (ej: usuario@dominio.com).</div>
               </div>
               <div class="col-12">
                 <label for="loginPassword" class="form-label">Contraseña</label>
@@ -646,6 +648,30 @@ https://templatemo.com/tm-574-mexant
           localStorage.setItem('users', JSON.stringify(users));
         }
 
+        // Simple email validation helper (RFC-lite)
+        function isValidEmail(email) {
+          if (!email || typeof email !== 'string') return false;
+          // Basic pattern: something@something.tld (no spaces)
+          var re = /^\S+@\S+\.\S+$/;
+          return re.test(email);
+        }
+
+        // Helper to show/hide feedback
+        function setEmailFeedback(inputId, valid) {
+          var input = document.getElementById(inputId);
+          var feedback = document.getElementById(inputId === 'registerEmail' ? 'registerEmailFeedback' : 'loginEmailFeedback');
+          if (!input || !feedback) return;
+          if (valid) {
+            feedback.style.display = 'none';
+            input.setAttribute('aria-invalid', 'false');
+            input.classList.remove('is-invalid');
+          } else {
+            feedback.style.display = 'block';
+            input.setAttribute('aria-invalid', 'true');
+            input.classList.add('is-invalid');
+          }
+        }
+
         // Create account handler
         var createForm = document.getElementById('create-account');
         if (createForm) {
@@ -653,10 +679,19 @@ https://templatemo.com/tm-574-mexant
             e.preventDefault();
             var fn = (document.getElementById('firstName') || {}).value || '';
             var ln = (document.getElementById('lastName') || {}).value || '';
-            var email = ((document.getElementById('registerEmail') || {}).value || '').trim().toLowerCase();
+            var emailInput = (document.getElementById('registerEmail') || {});
+            var email = (emailInput.value || '').trim().toLowerCase();
             var pw = (document.getElementById('registerPassword') || {}).value || '';
             var cpw = (document.getElementById('confirmPassword') || {}).value || '';
             var role = (document.getElementById('registerRole') || {}).value || 'normal';
+
+            // Validate email format
+            if (!isValidEmail(email)) {
+              setEmailFeedback('registerEmail', false);
+              return;
+            } else {
+              setEmailFeedback('registerEmail', true);
+            }
 
             if (!fn || !ln || !email || !pw || !cpw) {
               alert('Por favor completa todos los campos.');
@@ -699,8 +734,17 @@ https://templatemo.com/tm-574-mexant
         if (loginForm) {
           loginForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            var email = ((document.getElementById('loginEmail') || {}).value || '').trim().toLowerCase();
+            var emailInput = (document.getElementById('loginEmail') || {});
+            var email = (emailInput.value || '').trim().toLowerCase();
             var pw = (document.getElementById('loginPassword') || {}).value || '';
+
+            // Validate email format
+            if (!isValidEmail(email)) {
+              setEmailFeedback('loginEmail', false);
+              return;
+            } else {
+              setEmailFeedback('loginEmail', true);
+            }
 
             if (!email || !pw) {
               alert('Por favor introduce correo y contraseña.');

@@ -23,17 +23,325 @@ document.addEventListener('DOMContentLoaded', function() {
     const applyColorsBtn = document.getElementById('apply-colors');
     if (applyColorsBtn) {
         applyColorsBtn.addEventListener('click', function() {
-            const c1 = document.getElementById('color-1')?.value;
-            const c2 = document.getElementById('color-2')?.value;
-            const c3 = document.getElementById('color-3')?.value;
-            const c4 = document.getElementById('color-4')?.value;
-            if (c1) document.documentElement.style.setProperty('--primary-color', c1);
-            if (c2) document.documentElement.style.setProperty('--secondary-color', c2);
-            if (c3) document.documentElement.style.setProperty('--accent-color', c3);
-            if (c4) document.documentElement.style.setProperty('--danger-color', c4);
+                const c1 = document.getElementById('color-1')?.value;
+                const c2 = document.getElementById('color-2')?.value;
+                const c3 = document.getElementById('color-3')?.value;
+                const c4 = document.getElementById('color-4')?.value;
+                const c5 = document.getElementById('color-5')?.value;
+                if (c1) document.documentElement.style.setProperty('--primary-color', c1);
+                if (c2) document.documentElement.style.setProperty('--secondary-color', c2);
+                if (c3) document.documentElement.style.setProperty('--accent-color', c3);
+                if (c4) document.documentElement.style.setProperty('--danger-color', c4);
+                if (c5) document.documentElement.style.setProperty('--neutral-color', c5);
+            // persist current colors and add to history
+            try{
+                const colorSettings = { primary: c1, secondary: c2, accent: c3, danger: c4, neutral: c5 };
+                try{ localStorage.setItem('admin_color_settings', JSON.stringify(colorSettings)); }catch(e){ /* ignore */ }
+                const ch = (function load(){ try{ return JSON.parse(localStorage.getItem('admin_color_history')||'[]'); }catch(e){ return []; } })();
+                ch.push(Object.assign({}, colorSettings, { timestamp: Date.now() }));
+                try{ localStorage.setItem('admin_color_history', JSON.stringify(ch)); }catch(e){}
+                renderColorHistory();
+            }catch(e){ console.warn('No se pudo guardar colores en historial', e); }
+
+                try{ if(window.BroadcastChannel){ const bc = new BroadcastChannel('admin-typography'); bc.postMessage({ type: 'colors-applied', colors: { primary: c1, secondary: c2, accent: c3, danger: c4, neutral: c5 } }); bc.close(); } }catch(e){}
             alert('Colores aplicados correctamente');
         });
     }
+
+    // ---------- Color history (similar to typography) ----------
+    function loadColorHistory(){ try{ return JSON.parse(localStorage.getItem('admin_color_history')||'[]'); }catch(e){ return []; } }
+    function saveColorHistory(arr){ try{ localStorage.setItem('admin_color_history', JSON.stringify(arr)); }catch(e){ console.warn('No se pudo guardar historial de colores', e); } }
+
+    function renderColorHistory(){
+        const tbody = document.querySelector('#colors-changes tbody');
+        if(!tbody) return;
+        const hist = loadColorHistory();
+        tbody.innerHTML = '';
+        hist.forEach((entry, idx) => {
+            const tr = document.createElement('tr');
+            const idTd = document.createElement('td'); idTd.textContent = (idx+1).toString(); tr.appendChild(idTd);
+            const pTd = document.createElement('td'); pTd.textContent = entry.primary || ''; tr.appendChild(pTd);
+            const sTd = document.createElement('td'); sTd.textContent = entry.secondary || ''; tr.appendChild(sTd);
+            const aTd = document.createElement('td'); aTd.textContent = entry.accent || ''; tr.appendChild(aTd);
+            const dTd = document.createElement('td'); dTd.textContent = entry.danger || ''; tr.appendChild(dTd);
+            const nTd = document.createElement('td'); nTd.textContent = entry.neutral || ''; tr.appendChild(nTd);
+            const timeTd = document.createElement('td'); timeTd.textContent = entry.timestamp ? new Date(entry.timestamp).toLocaleString() : ''; tr.appendChild(timeTd);
+            tr.addEventListener('contextmenu', function(ev){ ev.preventDefault(); showColorContextMenu(ev.pageX, ev.pageY, idx); });
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Color context menu (separate instance)
+    let colorContextMenuEl = null;
+    function ensureColorContextMenu(){
+        if(colorContextMenuEl) return colorContextMenuEl;
+        colorContextMenuEl = document.createElement('div');
+        colorContextMenuEl.id = 'color-context-menu';
+        colorContextMenuEl.style.position = 'absolute';
+        colorContextMenuEl.style.zIndex = 9999;
+        colorContextMenuEl.style.background = '#fff';
+        colorContextMenuEl.style.border = '1px solid #ccc';
+        colorContextMenuEl.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)';
+        colorContextMenuEl.style.padding = '6px 0';
+        colorContextMenuEl.style.minWidth = '140px';
+        colorContextMenuEl.style.display = 'none';
+        const opts = ['Editar','Eliminar','Aplicar'];
+        opts.forEach((label) => {
+            const item = document.createElement('div');
+            item.textContent = label;
+            item.style.padding = '8px 12px';
+            item.style.cursor = 'pointer';
+            item.addEventListener('mouseenter', ()=> item.style.background = '#f0f0f0');
+            item.addEventListener('mouseleave', ()=> item.style.background = 'transparent');
+            item.dataset.action = label.toLowerCase();
+            colorContextMenuEl.appendChild(item);
+        });
+        document.body.appendChild(colorContextMenuEl);
+        document.addEventListener('click', function(){ if(colorContextMenuEl) colorContextMenuEl.style.display = 'none'; });
+        document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && colorContextMenuEl) colorContextMenuEl.style.display = 'none'; });
+        return colorContextMenuEl;
+    }
+
+    function showColorContextMenu(x,y,index){
+        const menu = ensureColorContextMenu();
+        menu.style.left = x + 'px';
+        menu.style.top = y + 'px';
+        menu.style.display = 'block';
+        Array.from(menu.children).forEach(child => {
+            child.onclick = function(ev){
+                const action = child.dataset.action;
+                handleColorContextAction(action, index);
+                menu.style.display = 'none';
+            };
+        });
+    }
+
+    function handleColorContextAction(action, index){
+        const hist = loadColorHistory();
+        const entry = hist[index];
+        if(!entry) return;
+        if(action === 'editar'){
+            try{
+                const h = loadColorHistory();
+                const newEntry = {
+                    primary: document.getElementById('color-1')?.value || entry.primary,
+                    secondary: document.getElementById('color-2')?.value || entry.secondary,
+                    accent: document.getElementById('color-3')?.value || entry.accent,
+                    danger: document.getElementById('color-4')?.value || entry.danger,
+                    neutral: document.getElementById('color-5')?.value || entry.neutral,
+                    timestamp: Date.now()
+                };
+                h[index] = newEntry;
+                saveColorHistory(h);
+                renderColorHistory();
+                // apply and update previews
+                applyColorsToUI(newEntry);
+                alert('Entrada de color actualizada con los valores actuales.');
+            }catch(e){ console.warn('Error actualizando entrada de color', e); }
+        } else if(action === 'eliminar'){
+            showColorDeleteConfirmation(index);
+        } else if(action === 'aplicar'){
+            applyColorsToUI({ primary: entry.primary, secondary: entry.secondary, accent: entry.accent, danger: entry.danger, neutral: entry.neutral });
+            try{ localStorage.setItem('admin_color_settings', JSON.stringify({ primary: entry.primary, secondary: entry.secondary, accent: entry.accent, danger: entry.danger, neutral: entry.neutral })); }catch(e){}
+            alert('Configuración de colores aplicada desde el historial.');
+        }
+    }
+
+    // Color delete confirmation modal
+    let colorConfirmOverlay = null;
+    function ensureColorConfirmModal(){
+        if(colorConfirmOverlay) return colorConfirmOverlay;
+        colorConfirmOverlay = document.createElement('div');
+        colorConfirmOverlay.className = 'admin-confirm-overlay';
+        colorConfirmOverlay.innerHTML = `
+            <div class="admin-confirm" role="dialog" aria-modal="true">
+                <h3>Confirmar eliminación (colores)</h3>
+                <p>¿Eliminar esta entrada del historial de colores?</p>
+                <div class="confirm-actions">
+                    <button class="btn-cancel">Cancelar</button>
+                    <button class="btn-confirm">Eliminar</button>
+                </div>
+            </div>`;
+        document.body.appendChild(colorConfirmOverlay);
+        // Apply high-contrast inline styles so modal is visible regardless of theme colors
+        try{
+            colorConfirmOverlay.style.position = 'fixed';
+            colorConfirmOverlay.style.left = '0';
+            colorConfirmOverlay.style.top = '0';
+            colorConfirmOverlay.style.right = '0';
+            colorConfirmOverlay.style.bottom = '0';
+            colorConfirmOverlay.style.display = 'none';
+            colorConfirmOverlay.style.alignItems = 'center';
+            colorConfirmOverlay.style.justifyContent = 'center';
+            colorConfirmOverlay.style.background = 'rgba(0,0,0,0.36)';
+            colorConfirmOverlay.style.zIndex = '10000';
+            const dialog = colorConfirmOverlay.querySelector('.admin-confirm');
+            if(dialog){
+                dialog.style.background = '#ffffff';
+                dialog.style.color = '#111111';
+                dialog.style.padding = '20px';
+                dialog.style.borderRadius = '8px';
+                dialog.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)';
+                dialog.style.maxWidth = '520px';
+                dialog.style.width = '90%';
+            }
+            const btnCancel = colorConfirmOverlay.querySelector('.btn-cancel');
+            const btnConfirm = colorConfirmOverlay.querySelector('.btn-confirm');
+            if(btnCancel){
+                btnCancel.style.background = '#f0f0f0';
+                btnCancel.style.color = '#111111';
+                btnCancel.style.border = '1px solid rgba(0,0,0,0.08)';
+                btnCancel.style.padding = '8px 12px';
+                btnCancel.style.borderRadius = '4px';
+                btnCancel.style.cursor = 'pointer';
+            }
+            if(btnConfirm){
+                btnConfirm.style.background = '#e53935';
+                btnConfirm.style.color = '#ffffff';
+                btnConfirm.style.border = 'none';
+                btnConfirm.style.padding = '8px 12px';
+                btnConfirm.style.borderRadius = '4px';
+                btnConfirm.style.cursor = 'pointer';
+            }
+            const actions = colorConfirmOverlay.querySelector('.confirm-actions');
+            if(actions){ actions.style.display = 'flex'; actions.style.gap = '8px'; actions.style.justifyContent = 'flex-end'; actions.style.marginTop = '12px'; }
+        }catch(e){}
+        // handlers
+        colorConfirmOverlay.querySelector('.btn-cancel').addEventListener('click', ()=>{ colorConfirmOverlay.style.display = 'none'; });
+        colorConfirmOverlay.querySelector('.btn-confirm').addEventListener('click', ()=>{
+            const idx = colorConfirmOverlay.dataset.deleteIndex;
+            try{
+                const h = loadColorHistory();
+                if(typeof idx !== 'undefined'){
+                    h.splice(parseInt(idx,10),1);
+                    saveColorHistory(h);
+                    renderColorHistory();
+                }
+            }catch(e){ console.warn('Error eliminando entrada de colores', e); }
+            colorConfirmOverlay.style.display = 'none';
+        });
+        return colorConfirmOverlay;
+    }
+
+    function showColorDeleteConfirmation(index){
+        const modal = ensureColorConfirmModal();
+        modal.dataset.deleteIndex = index;
+        // ensure inline styles enforced before showing
+        try{
+            modal.style.display = 'flex';
+        }catch(e){}
+    }
+
+    function applyColorsToUI(settings){
+        if(!settings) return;
+        try{ if(settings.primary) document.documentElement.style.setProperty('--primary-color', settings.primary); }catch(e){}
+        try{ if(settings.secondary) document.documentElement.style.setProperty('--secondary-color', settings.secondary); }catch(e){}
+        try{ if(settings.accent) document.documentElement.style.setProperty('--accent-color', settings.accent); }catch(e){}
+        try{ if(settings.danger) document.documentElement.style.setProperty('--danger-color', settings.danger); }catch(e){}
+        // update inputs & previews
+        try{ if(document.getElementById('color-1')) document.getElementById('color-1').value = settings.primary || ''; }catch(e){}
+    try{ if(document.getElementById('color-2')) document.getElementById('color-2').value = settings.secondary || ''; }catch(e){}
+    try{ if(document.getElementById('color-3')) document.getElementById('color-3').value = settings.accent || ''; }catch(e){}
+    try{ if(document.getElementById('color-4')) document.getElementById('color-4').value = settings.danger || ''; }catch(e){}
+    try{ if(document.getElementById('color-5')) document.getElementById('color-5').value = settings.neutral || ''; }catch(e){}
+        // update hex text inputs and preview boxes if present
+        document.querySelectorAll('.color-item').forEach(parent => {
+            try{
+                const hexInput = parent.querySelector('input[type="text"][id$="-hex"]');
+                const preview = parent.querySelector('.color-preview');
+                const id = hexInput?.id || '';
+                if(id.indexOf('color-1')>=0){ if(hexInput) hexInput.value = settings.primary || hexInput.value; if(preview) preview.style.backgroundColor = settings.primary || preview.style.backgroundColor; }
+                if(id.indexOf('color-2')>=0){ if(hexInput) hexInput.value = settings.secondary || hexInput.value; if(preview) preview.style.backgroundColor = settings.secondary || preview.style.backgroundColor; }
+                if(id.indexOf('color-3')>=0){ if(hexInput) hexInput.value = settings.accent || hexInput.value; if(preview) preview.style.backgroundColor = settings.accent || preview.style.backgroundColor; }
+                if(id.indexOf('color-4')>=0){ if(hexInput) hexInput.value = settings.danger || hexInput.value; if(preview) preview.style.backgroundColor = settings.danger || preview.style.backgroundColor; }
+                if(id.indexOf('color-5')>=0){ if(hexInput) hexInput.value = settings.neutral || hexInput.value; if(preview) preview.style.backgroundColor = settings.neutral || preview.style.backgroundColor; }
+            }catch(e){}
+        });
+    }
+
+    // Initialize color controls from saved settings
+    (function initColorControls(){
+        try{
+            const saved = (function(){ try{ return JSON.parse(localStorage.getItem('admin_color_settings')||'null'); }catch(e){ return null; } })();
+            if(saved) applyColorsToUI(saved);
+        }catch(e){ console.warn('No se pudo inicializar controles de color', e); }
+        // ensure there is at least one history entry
+        try{
+            const ch = loadColorHistory();
+            if(!ch || ch.length === 0){
+                const defaultEntry = { primary: '#2c3e50', secondary: '#ffffff', accent: '#ff6b6b', danger: '#e74c3c', neutral: '#ffffff', timestamp: '' };
+                saveColorHistory([defaultEntry]);
+            }
+        }catch(e){}
+        renderColorHistory();
+    })();
+
+    // Make color preview boxes open a color picker when clicked
+    (function wireColorPreviewClick(){
+        try{
+            const previews = document.querySelectorAll('.color-preview');
+            previews.forEach((box, idx) => {
+                // try to derive the matching text input by DOM proximity
+                const parent = box.closest('.color-item');
+                if(!parent) return;
+                const hexInput = parent.querySelector('input[type="text"][id$="-hex"]');
+                const colorInputId = 'js-color-picker-' + (hexInput ? hexInput.id : idx);
+
+                    // Prefer the visible color input inside the same .color-item if available
+                    let colorInput = parent.querySelector('input[type="color"]');
+                    // fallback: create a hidden input[type=color] if not present
+                    if(!colorInput){
+                        colorInput = document.getElementById(colorInputId);
+                        if(!colorInput){
+                            colorInput = document.createElement('input');
+                            colorInput.type = 'color';
+                            colorInput.id = colorInputId;
+                            colorInput.style.position = 'absolute';
+                            colorInput.style.left = '-9999px';
+                            document.body.appendChild(colorInput);
+                        }
+                    }
+
+                // initialize color input from hex text or preview background
+                const initColor = (hexInput && hexInput.value) ? hexInput.value : (window.getComputedStyle(box).backgroundColor || '#ffffff');
+                try{ // convert rgb(...) to hex if needed
+                    if(initColor.indexOf('rgb') === 0){
+                        const nums = initColor.match(/\d+/g);
+                        if(nums && nums.length >= 3){
+                            const hx = '#' + nums.slice(0,3).map(n => parseInt(n,10).toString(16).padStart(2,'0')).join('');
+                            colorInput.value = hx;
+                        }
+                    } else {
+                        colorInput.value = initColor;
+                    }
+                }catch(e){ colorInput.value = '#ffffff'; }
+
+                // on change, update preview background and hex input
+                // avoid attaching multiple listeners to the same element
+                if(!colorInput.dataset || !colorInput.dataset._colorWired){
+                    colorInput.addEventListener('input', function(){
+                        try{
+                            box.style.backgroundColor = this.value;
+                            if(hexInput) hexInput.value = this.value;
+                        }catch(e){}
+                    });
+                    try{ colorInput.dataset._colorWired = '1'; }catch(e){}
+                }
+
+                // when user clicks the preview box, open the color input
+                box.style.cursor = 'pointer';
+                box.addEventListener('click', function(){
+                    try{
+                        // focus & open color input — clicking the input programmatically opens the color picker in most browsers
+                        colorInput.click();
+                    }catch(e){
+                        // fallback: focus the hidden input so user can use keyboard
+                        try{ colorInput.focus(); }catch(e){}
+                    }
+                });
+            });
+        }catch(e){ console.warn('No se pudieron enlazar previews de color', e); }
+    })();
 
     // ---------- Typography preview and persistence (new) ----------
     const iframe = document.getElementById('site-preview');
@@ -264,6 +572,50 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>`;
         document.body.appendChild(confirmOverlay);
+        try{
+            confirmOverlay.style.position = 'fixed';
+            confirmOverlay.style.left = '0';
+            confirmOverlay.style.top = '0';
+            confirmOverlay.style.right = '0';
+            confirmOverlay.style.bottom = '0';
+            confirmOverlay.style.display = 'none';
+            confirmOverlay.style.alignItems = 'center';
+            confirmOverlay.style.justifyContent = 'center';
+            confirmOverlay.style.background = 'rgba(0,0,0,0.36)';
+            confirmOverlay.style.zIndex = '10000';
+
+            const dialog = confirmOverlay.querySelector('.admin-confirm');
+            if(dialog){
+                dialog.style.background = '#ffffff';
+                dialog.style.color = '#111111';
+                dialog.style.padding = '20px';
+                dialog.style.borderRadius = '8px';
+                dialog.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)';
+                dialog.style.maxWidth = '520px';
+                dialog.style.width = '90%';
+            }
+
+            const btnCancel = confirmOverlay.querySelector('.btn-cancel');
+            const btnConfirm = confirmOverlay.querySelector('.btn-confirm');
+            if(btnCancel){
+                btnCancel.style.background = '#f0f0f0';
+                btnCancel.style.color = '#111111';
+                btnCancel.style.border = '1px solid rgba(0,0,0,0.08)';
+                btnCancel.style.padding = '8px 12px';
+                btnCancel.style.borderRadius = '4px';
+                btnCancel.style.cursor = 'pointer';
+            }
+            if(btnConfirm){
+                btnConfirm.style.background = '#e53935';
+                btnConfirm.style.color = '#ffffff';
+                btnConfirm.style.border = 'none';
+                btnConfirm.style.padding = '8px 12px';
+                btnConfirm.style.borderRadius = '4px';
+                btnConfirm.style.cursor = 'pointer';
+            }
+            const actions = confirmOverlay.querySelector('.confirm-actions');
+            if(actions){ actions.style.display = 'flex'; actions.style.gap = '8px'; actions.style.justifyContent = 'flex-end'; actions.style.marginTop = '12px'; }
+        }catch(e){ /* ignore style application errors */ }
         // handlers
         confirmOverlay.querySelector('.btn-cancel').addEventListener('click', ()=>{ confirmOverlay.style.display = 'none'; });
         confirmOverlay.querySelector('.btn-confirm').addEventListener('click', ()=>{
