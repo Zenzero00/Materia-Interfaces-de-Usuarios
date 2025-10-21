@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     primary: c1,    // Botones verdes, iconos
                     secondary: c2,  // Botones naranjas  
                     accent: c3,     // Textos, encabezados, fondos
-                    neutral: c4     // Texto sobre botones
+                    neutral: c4     // Texto sobre botones, textos sobre fondos oscuros
                 });
                 
                 // Guardar en historial
@@ -52,10 +52,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     renderColorHistory();
                 }catch(e){ console.warn('No se pudo guardar colores en historial', e); }
 
+                try{ 
+                    if(window.BroadcastChannel){ 
+                        const bc = new BroadcastChannel('admin-colors'); 
+                        bc.postMessage({ 
+                            type: 'colors-applied', 
+                            colors: { primary: c1, secondary: c2, accent: c3, neutral: c4 }
+                        }); 
+                        bc.close(); 
+                    } 
+                }catch(e){}
+                
                 alert('Colores aplicados correctamente');
             });
         }
-
         // Función mejorada para aplicar colores al iframe
         function applyColorsToIframe(colors) {
             const iframe = document.getElementById('site-preview');
@@ -112,10 +122,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // ===== COLOR 3 (ACCENT) - Textos, encabezados y fondos =====
             
-            // Encabezados principales
+            // Encabezados principales (excepto los que están sobre fondos oscuros)
             const mainHeadings = doc.querySelectorAll('h1, h2, h3, h4, h5, h6');
             mainHeadings.forEach(heading => {
-                if (colors.accent) heading.style.color = colors.accent;
+                // No aplicar a títulos que ya manejamos específicamente
+                if (!heading.closest('.simple-cta') && !heading.closest('.calculator .section-heading')) {
+                    if (colors.accent) heading.style.color = colors.accent;
+                }
             });
             
             // Texto del banner principal
@@ -186,24 +199,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 body.style.backgroundColor = colors.neutral;
             }
             
-            // ===== TEXTOS ESPECÍFICOS (span, em, strong) =====
+            // ===== TEXTOS QUE DEBEN SER BLANCOS (COLOR 4) SOBRE FONDOS OSCUROS =====
             
-            // Elementos em en el banner
-            const emElements = doc.querySelectorAll('.header-text em');
-            emElements.forEach(em => {
-                if (colors.secondary) em.style.color = colors.secondary;
+            // Títulos de la sección simple-cta
+            const simpleCtaTitles = doc.querySelectorAll('.simple-cta h4');
+            simpleCtaTitles.forEach(title => {
+                if (colors.neutral) title.style.color = colors.neutral;
             });
             
-            // Elementos strong en el banner
-            const strongElements = doc.querySelectorAll('.header-text strong');
-            strongElements.forEach(strong => {
+            // Texto de simple-cta (pero mantener em y strong con sus colores)
+            const simpleCtaText = doc.querySelectorAll('.simple-cta p');
+            simpleCtaText.forEach(text => {
+                if (colors.neutral) text.style.color = colors.neutral;
+            });
+            
+            // Títulos de los formularios (Create Account, Login)
+            const formTitles = doc.querySelectorAll('.calculator .section-heading h6, .calculator .section-heading h4');
+            formTitles.forEach(title => {
+                if (colors.neutral) title.style.color = colors.neutral;
+            });
+            
+            // Texto de la sección calculator (descripciones)
+            const calculatorText = doc.querySelectorAll('.calculator p');
+            calculatorText.forEach(text => {
+                if (colors.neutral) text.style.color = colors.neutral;
+            });
+            
+            // ===== MANTENER COLORES ESPECÍFICOS EN SIMPLE-CTA =====
+            
+            // "Solutions" debe mantener el color primary (verde)
+            const solutionsText = doc.querySelectorAll('.simple-cta em');
+            solutionsText.forEach(em => {
+                if (colors.primary) em.style.color = colors.primary;
+            });
+            
+            // "Crypto" debe mantener el color secondary (naranja)
+            const cryptoText = doc.querySelectorAll('.simple-cta strong');
+            cryptoText.forEach(strong => {
                 if (colors.secondary) strong.style.color = colors.secondary;
-            });
-            
-            // Elementos span con color específico (como en testimonials)
-            const coloredSpans = doc.querySelectorAll('.testimonials span, .about-us span.item-title');
-            coloredSpans.forEach(span => {
-                if (colors.primary) span.style.color = colors.primary;
             });
             
             // ===== FORMULARIOS =====
@@ -335,14 +368,36 @@ document.addEventListener('DOMContentLoaded', function() {
         tbody.innerHTML = '';
         hist.forEach((entry, idx) => {
             const tr = document.createElement('tr');
-            const idTd = document.createElement('td'); idTd.textContent = (idx+1).toString(); tr.appendChild(idTd);
-            const pTd = document.createElement('td'); pTd.textContent = entry.primary || ''; tr.appendChild(pTd);
-            const sTd = document.createElement('td'); sTd.textContent = entry.secondary || ''; tr.appendChild(sTd);
-            const aTd = document.createElement('td'); aTd.textContent = entry.accent || ''; tr.appendChild(aTd);
-            const dTd = document.createElement('td'); dTd.textContent = entry.danger || ''; tr.appendChild(dTd);
-            const nTd = document.createElement('td'); nTd.textContent = entry.neutral || ''; tr.appendChild(nTd);
-            const timeTd = document.createElement('td'); timeTd.textContent = entry.timestamp ? new Date(entry.timestamp).toLocaleString() : ''; tr.appendChild(timeTd);
-            tr.addEventListener('contextmenu', function(ev){ ev.preventDefault(); showColorContextMenu(ev.pageX, ev.pageY, idx); });
+            const idTd = document.createElement('td'); 
+            idTd.textContent = (idx+1).toString(); 
+            tr.appendChild(idTd);
+            
+            const pTd = document.createElement('td'); 
+            pTd.textContent = entry.primary || ''; 
+            tr.appendChild(pTd);
+            
+            const sTd = document.createElement('td'); 
+            sTd.textContent = entry.secondary || ''; 
+            tr.appendChild(sTd);
+            
+            const aTd = document.createElement('td'); 
+            aTd.textContent = entry.accent || ''; 
+            tr.appendChild(aTd);
+            
+            const nTd = document.createElement('td'); 
+            nTd.textContent = entry.neutral || ''; 
+            tr.appendChild(nTd);
+            
+            // ELIMINADO: td para color 5
+            
+            const timeTd = document.createElement('td'); 
+            timeTd.textContent = entry.timestamp ? new Date(entry.timestamp).toLocaleString() : ''; 
+            tr.appendChild(timeTd);
+            
+            tr.addEventListener('contextmenu', function(ev){ 
+                ev.preventDefault(); 
+                showColorContextMenu(ev.pageX, ev.pageY, idx); 
+            });
             tbody.appendChild(tr);
         });
     }
@@ -513,24 +568,39 @@ document.addEventListener('DOMContentLoaded', function() {
         try{ if(settings.primary) document.documentElement.style.setProperty('--primary-color', settings.primary); }catch(e){}
         try{ if(settings.secondary) document.documentElement.style.setProperty('--secondary-color', settings.secondary); }catch(e){}
         try{ if(settings.accent) document.documentElement.style.setProperty('--accent-color', settings.accent); }catch(e){}
-        try{ if(settings.danger) document.documentElement.style.setProperty('--danger-color', settings.danger); }catch(e){}
+        try{ if(settings.neutral) document.documentElement.style.setProperty('--neutral-color', settings.neutral); }catch(e){}
+        // ELIMINADO: color 5
+
         // update inputs & previews
         try{ if(document.getElementById('color-1')) document.getElementById('color-1').value = settings.primary || ''; }catch(e){}
-    try{ if(document.getElementById('color-2')) document.getElementById('color-2').value = settings.secondary || ''; }catch(e){}
-    try{ if(document.getElementById('color-3')) document.getElementById('color-3').value = settings.accent || ''; }catch(e){}
-    try{ if(document.getElementById('color-4')) document.getElementById('color-4').value = settings.danger || ''; }catch(e){}
-    try{ if(document.getElementById('color-5')) document.getElementById('color-5').value = settings.neutral || ''; }catch(e){}
-        // update hex text inputs and preview boxes if present
+        try{ if(document.getElementById('color-2')) document.getElementById('color-2').value = settings.secondary || ''; }catch(e){}
+        try{ if(document.getElementById('color-3')) document.getElementById('color-3').value = settings.accent || ''; }catch(e){}
+        try{ if(document.getElementById('color-4')) document.getElementById('color-4').value = settings.neutral || ''; }catch(e){}
+        // ELIMINADO: color 5
+
+        // update hex text inputs and preview boxes
         document.querySelectorAll('.color-item').forEach(parent => {
             try{
                 const hexInput = parent.querySelector('input[type="text"][id$="-hex"]');
                 const preview = parent.querySelector('.color-preview');
                 const id = hexInput?.id || '';
-                if(id.indexOf('color-1')>=0){ if(hexInput) hexInput.value = settings.primary || hexInput.value; if(preview) preview.style.backgroundColor = settings.primary || preview.style.backgroundColor; }
-                if(id.indexOf('color-2')>=0){ if(hexInput) hexInput.value = settings.secondary || hexInput.value; if(preview) preview.style.backgroundColor = settings.secondary || preview.style.backgroundColor; }
-                if(id.indexOf('color-3')>=0){ if(hexInput) hexInput.value = settings.accent || hexInput.value; if(preview) preview.style.backgroundColor = settings.accent || preview.style.backgroundColor; }
-                if(id.indexOf('color-4')>=0){ if(hexInput) hexInput.value = settings.danger || hexInput.value; if(preview) preview.style.backgroundColor = settings.danger || preview.style.backgroundColor; }
-                if(id.indexOf('color-5')>=0){ if(hexInput) hexInput.value = settings.neutral || hexInput.value; if(preview) preview.style.backgroundColor = settings.neutral || preview.style.backgroundColor; }
+                if(id.indexOf('color-1')>=0){ 
+                    if(hexInput) hexInput.value = settings.primary || hexInput.value; 
+                    if(preview) preview.style.backgroundColor = settings.primary || preview.style.backgroundColor; 
+                }
+                if(id.indexOf('color-2')>=0){ 
+                    if(hexInput) hexInput.value = settings.secondary || hexInput.value; 
+                    if(preview) preview.style.backgroundColor = settings.secondary || preview.style.backgroundColor; 
+                }
+                if(id.indexOf('color-3')>=0){ 
+                    if(hexInput) hexInput.value = settings.accent || hexInput.value; 
+                    if(preview) preview.style.backgroundColor = settings.accent || preview.style.backgroundColor; 
+                }
+                if(id.indexOf('color-4')>=0){ 
+                    if(hexInput) hexInput.value = settings.neutral || hexInput.value; 
+                    if(preview) preview.style.backgroundColor = settings.neutral || preview.style.backgroundColor; 
+                }
+                // ELIMINADO: color-5
             }catch(e){}
         });
     }
@@ -538,14 +608,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize color controls from saved settings
     (function initColorControls(){
         try{
-            const saved = (function(){ try{ return JSON.parse(localStorage.getItem('admin_color_settings')||'null'); }catch(e){ return null; } })();
+            const saved = (function(){ 
+                try{ 
+                    return JSON.parse(localStorage.getItem('admin_color_settings')||'null'); 
+                }catch(e){ 
+                    return null; 
+                } 
+            })();
             if(saved) applyColorsToUI(saved);
         }catch(e){ console.warn('No se pudo inicializar controles de color', e); }
-        // ensure there is at least one history entry
+        
+        // ensure there is at least one history entry - SOLO 4 COLORES
         try{
             const ch = loadColorHistory();
             if(!ch || ch.length === 0){
-                const defaultEntry = { primary: '#2c3e50', secondary: '#ffffff', accent: '#ff6b6b', danger: '#e74c3c', neutral: '#ffffff', timestamp: '' };
+                const defaultEntry = { 
+                    primary: '#43ba7f', 
+                    secondary: '#ff511a', 
+                    accent: '#212741', 
+                    neutral: '#ffffff', 
+                    timestamp: '' 
+                };
                 saveColorHistory([defaultEntry]);
             }
         }catch(e){}
@@ -794,41 +877,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function handleContextAction(action, index){
-        const hist = loadHistory();
+    function handleColorContextAction(action, index){
+        const hist = loadColorHistory();
         const entry = hist[index];
         if(!entry) return;
         if(action === 'editar'){
-            // Overwrite this history entry with current control values (save what is currently set)
             try{
-                const h = loadHistory();
+                const h = loadColorHistory();
                 const newEntry = {
-                    primary: primarySelect?.value || entry.primary,
-                    secondary: secondarySelect?.value || entry.secondary,
-                    titleSize: titleSlider ? parseInt(titleSlider.value,10) : entry.titleSize,
-                    subtitleSize: subtitleSlider ? parseInt(subtitleSlider.value,10) : entry.subtitleSize,
-                    paragraphSize: paragraphSlider ? parseInt(paragraphSlider.value,10) : entry.paragraphSize,
+                    primary: document.getElementById('color-1')?.value || entry.primary,
+                    secondary: document.getElementById('color-2')?.value || entry.secondary,
+                    accent: document.getElementById('color-3')?.value || entry.accent,
+                    neutral: document.getElementById('color-4')?.value || entry.neutral,
                     timestamp: Date.now()
                 };
                 h[index] = newEntry;
-                saveHistory(h);
-                renderHistory();
+                saveColorHistory(h);
+                renderColorHistory();
                 // apply and update previews
-                const s = { primary: newEntry.primary, secondary: newEntry.secondary, titleSize: newEntry.titleSize, subtitleSize: newEntry.subtitleSize, paragraphSize: newEntry.paragraphSize };
-                saveTypographySettings(s);
-                applyTypographyToIframe(s); updateAdminPreview(s);
-                alert('Entrada actualizada con los valores actuales.');
-            }catch(e){ console.warn('Error actualizando entrada', e); }
+                applyColorsToUI(newEntry);
+                alert('Entrada de color actualizada con los valores actuales.');
+            }catch(e){ console.warn('Error actualizando entrada de color', e); }
         } else if(action === 'eliminar'){
-            // show styled confirmation modal
-            showDeleteConfirmation(index);
+            showColorDeleteConfirmation(index);
         } else if(action === 'aplicar'){
-            // apply entry to site and save as current settings
-            const s = { primary: entry.primary, secondary: entry.secondary, titleSize: entry.titleSize, subtitleSize: entry.subtitleSize, paragraphSize: entry.paragraphSize };
-            saveTypographySettings(s);
-            applyTypographyToIframe(s);
-            updateAdminPreview(s);
-            alert('Configuración aplicada desde el historial.');
+            applyColorsToUI({ 
+                primary: entry.primary, 
+                secondary: entry.secondary, 
+                accent: entry.accent, 
+                neutral: entry.neutral 
+            });
+            try{ 
+                localStorage.setItem('admin_color_settings', JSON.stringify({ 
+                    primary: entry.primary, 
+                    secondary: entry.secondary, 
+                    accent: entry.accent, 
+                    neutral: entry.neutral 
+                })); 
+            }catch(e){}
+            alert('Configuración de colores aplicada desde el historial.');
         }
     }
 

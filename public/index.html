@@ -805,16 +805,17 @@ https://templatemo.com/tm-574-mexant
     }
 
     // Función para aplicar colores a elementos específicos
-    function applyColorsToElements(colors) {
-        // ===== COLOR 1 (PRIMARY) - Botones verdes e iconos =====
+    function applyColorsToPage(colors) {
+        // Aplicar variables CSS - SOLO 4 COLORES
+        if (colors.primary) document.documentElement.style.setProperty('--primary-color', colors.primary);
+        if (colors.secondary) document.documentElement.style.setProperty('--secondary-color', colors.secondary);
+        if (colors.accent) document.documentElement.style.setProperty('--accent-color', colors.accent);
+        if (colors.neutral) document.documentElement.style.setProperty('--neutral-color', colors.neutral);
         
-        // Botones "Discover More" (verdes)
-        const greenButtons = document.querySelectorAll('.green-button a');
-        greenButtons.forEach(btn => {
-            if (colors.primary) btn.style.backgroundColor = colors.primary;
-            if (colors.neutral) btn.style.color = colors.neutral;
-            btn.style.border = 'none';
-        });
+        // Aplicar colores a elementos específicos
+        applyColorsToElements(colors);
+    }
+
         
         // Botón "Contact Support" en el header
         const headerContactBtn = document.querySelector('.header-area .main-nav .nav li:last-child a');
@@ -863,6 +864,48 @@ https://templatemo.com/tm-574-mexant
         const serviceText = document.querySelectorAll('.service-item h4, .service-item p');
         serviceText.forEach(text => {
             if (colors.accent) text.style.color = colors.accent;
+        });
+
+        // ===== TEXTOS QUE DEBEN SER BLANCOS (COLOR 4) SOBRE FONDOS OSCUROS =====
+    
+        // Títulos de la sección simple-cta
+        const simpleCtaTitles = document.querySelectorAll('.simple-cta h4');
+        simpleCtaTitles.forEach(title => {
+            if (colors.neutral) title.style.color = colors.neutral;
+        });
+        
+        // Texto de simple-cta (pero mantener em y strong con sus colores)
+        const simpleCtaText = document.querySelectorAll('.simple-cta p');
+        simpleCtaText.forEach(text => {
+            if (colors.neutral) text.style.color = colors.neutral;
+        });
+        
+        // Títulos de los formularios (Create Account, Login)
+        const formTitles = document.querySelectorAll('.calculator .section-heading h6, .calculator .section-heading h4');
+        formTitles.forEach(title => {
+            if (colors.neutral) title.style.color = colors.neutral;
+        });
+        
+        // ===== MANTENER COLORES ESPECÍFICOS EN SIMPLE-CTA =====
+        
+        // "Solutions" debe mantener el color primary (verde)
+        const solutionsText = document.querySelectorAll('.simple-cta em');
+        solutionsText.forEach(em => {
+            if (colors.primary) em.style.color = colors.primary;
+        });
+        
+        // "Crypto" debe mantener el color secondary (naranja)
+        const cryptoText = document.querySelectorAll('.simple-cta strong');
+        cryptoText.forEach(strong => {
+            if (colors.secondary) strong.style.color = colors.secondary;
+        });
+        
+        // ===== TEXTOS ADICIONALES QUE DEBEN SER BLANCOS =====
+        
+        // Texto de la sección calculator (descripciones)
+        const calculatorText = document.querySelectorAll('.calculator p');
+        calculatorText.forEach(text => {
+            if (colors.neutral) text.style.color = colors.neutral;
         });
         
         // ===== FONDOS DE SECCIONES =====
@@ -1051,7 +1094,6 @@ https://templatemo.com/tm-574-mexant
                 table.style.borderBottomColor = `${colors.accent}20`;
             }
         });
-    }
 
     // Escuchar cambios de colores desde el admin
     try {
@@ -1062,7 +1104,7 @@ https://templatemo.com/tm-574-mexant
                     const data = ev.data || {};
                     if (data.type === 'colors-applied') {
                         applyColorsToPage(data.colors);
-                        // Guardar en localStorage
+                        // Guardar en localStorage - SOLO 4 COLORES
                         localStorage.setItem('admin_color_settings', JSON.stringify(data.colors));
                     }
                 } catch(e) {

@@ -33,11 +33,10 @@ font & reset css
 /* CSS Variables for customizable colors */
 /* En la sección de variables CSS, actualiza para usar todas las variables */
 :root {
-  --primary-color: #43ba7f;    /* Color 1 - Verde */
-  --secondary-color: #ff511a;  /* Color 2 - Naranja */  
-  --accent-color: #212741;     /* Color 3 - Azul oscuro */
-  --danger-color: #ffffff;     /* Color 4 - Blanco */
-  --neutral-color: #ffffff;    /* Color 5 - Blanco (puedes cambiarlo) */
+  --primary-color: #43ba7f;    /* Color 1 - Botones principales, iconos */
+  --secondary-color: #ff511a;  /* Color 2 - Botones secundarios, elementos destacados */
+  --accent-color: #212741;     /* Color 3 - Textos, encabezados, fondos */
+  --neutral-color: #ffffff;    /* Color 4 - Texto sobre botones, textos sobre fondos oscuros */
 }
 
 /* Asegurar que todos los elementos usen las variables */
