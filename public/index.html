@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="assets/css/owl.css">
     <link rel="stylesheet" href="assets/css/animate.css">
     <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css">
+    <link rel="stylesheet" href="assets/css/carrusel.css">
 <!--
 
 TemplateMo 574 Mexant
@@ -443,47 +444,90 @@ https://templatemo.com/tm-574-mexant
     </div>
   </section>
 
-  <section class="testimonials" id="testimonials">
+<section class="testimonials" id="testimonials" style="padding-top: 80px; padding-bottom: 80px;">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-6 offset-lg-3">
+      
+      <div class="row mb-5">
+        <div class="col-lg-12 text-center mb-4">
           <div class="section-heading">
-            <h6>Testimonials</h6>
-            <h4>What They Say</h4>
+            <h6>Nuestra Galería</h6>
+            <h4>Imágenes Destacadas</h4>
           </div>
         </div>
-        <div class="col-lg-10 offset-lg-1">
-          <div class="owl-testimonials owl-carousel" style="position: relative; z-index: 5;">
+        <div class="col-lg-12">
+          <div class="owl-carousel owl-theme owl-media">
+            
             <div class="item">
-              <i class="fa fa-quote-left"></i>
-              <p>“Donec et nunc massa. Nullam non felis dignissim, dapibus turpis semper, vulputate lorem. Nam volutpat posuere tellus, in porttitor justo interdum nec. Aenean in dapibus risus, in euismod ligula. Aliquam vel scelerisque elit.”</p>
-              <h4>David Eigenberg</h4>
-              <span>CEO of Mexant</span>
-              <div class="right-image">
-                <img src="assets/images/testimonials-01.jpg" alt="">
+              <div class="media-card">
+                <img src="assets/images/service-image-01.jpg" alt="Imagen 1">
+                <div class="overlay"><i class="fa fa-image"></i></div>
               </div>
             </div>
             <div class="item">
-              <i class="fa fa-quote-left"></i>
-              <p>“Etiam id ligula risus. Fusce fringilla nisl nunc, nec rutrum lectus cursus nec. In blandit nibh dolor, at rutrum leo accumsan porta. Nullam pulvinar eros porttitor risus condimentum tempus.”</p>
-              <h4>Andrew Garfield</h4>
-              <span>CTO of Mexant</span>
-              <div class="right-image">
-                <img src="assets/images/testimonials-01.jpg" alt="">
+              <div class="media-card">
+                <img src="assets/images/service-image-02.jpg" alt="Imagen 2">
+                <div class="overlay"><i class="fa fa-image"></i></div>
               </div>
             </div>
             <div class="item">
-              <i class="fa fa-quote-left"></i>
-              <p>“Ut dictum vehicula massa, ac pharetra leo tincidunt eu. Phasellus in tristique magna, ac gravida leo. Integer sed lorem sapien. Ut viverra mauris sed lobortis commodo.”</p>
-              <h4>George Lopez</h4>
-              <span>Crypto Manager</span>
-              <div class="right-image">
-                <img src="assets/images/testimonials-01.jpg" alt="">
+              <div class="media-card">
+                <img src="assets/images/service-image-03.jpg" alt="Imagen 3">
+                <div class="overlay"><i class="fa fa-image"></i></div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="media-card">
+                <img src="assets/images/service-image-01.jpg" alt="Imagen 4">
+                <div class="overlay"><i class="fa fa-image"></i></div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <div class="row">
+        <div class="col-lg-12 text-center mb-4">
+          <div class="section-heading">
+            <h6>Multimedia</h6>
+            <h4>Videos Recientes</h4>
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <div class="owl-carousel owl-theme owl-media">
+            
+            <div class="item">
+              <div class="media-card video-card">
+                <img src="assets/images/calculator-bg.jpg" alt="Video Thumb 1">
+                <div class="play-icon"><i class="fa fa-play-circle"></i></div>
+                <div class="video-label">Video Presentación</div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="media-card video-card">
+                <img src="assets/images/cta-bg.jpg" alt="Video Thumb 2">
+                <div class="play-icon"><i class="fa fa-play-circle"></i></div>
+                <div class="video-label">Tutorial Rápido</div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="media-card video-card">
+                <img src="assets/images/heading-bg.jpg" alt="Video Thumb 3">
+                <div class="play-icon"><i class="fa fa-play-circle"></i></div>
+                <div class="video-label">Conoce al Equipo</div>
+              </div>
+            </div>
+             <div class="item">
+              <div class="media-card video-card">
+                <img src="assets/images/calculator-bg.jpg" alt="Video Thumb 4">
+                <div class="play-icon"><i class="fa fa-play-circle"></i></div>
+                <div class="video-label">Evento 2025</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -1118,5 +1162,36 @@ https://templatemo.com/tm-574-mexant
         console.warn('No se pudo inicializar BroadcastChannel para colores:', e);
     }
 </script>
+
+    <script>
+      $(document).ready(function() {
+        // Destruir cualquier instancia previa si existe (por seguridad)
+        if($('.owl-media').hasClass('owl-loaded')) {
+          $('.owl-media').trigger('destroy.owl.carousel');
+        }
+
+        // Inicializar los dos carruseles con configuración de 3 items
+        $('.owl-media').owlCarousel({
+          loop: true,
+          margin: 30, // Espacio entre recuadros
+          nav: true,
+          dots: true,
+          autoplay: true,
+          autoplayTimeout: 5000,
+          smartSpeed: 1000,
+          responsive: {
+            0: {
+              items: 1 // En celular se ve 1
+            },
+            768: {
+              items: 2 // En tablet se ven 2
+            },
+            992: {
+              items: 3 // En pantalla grande se ven 3 (Como pediste)
+            }
+          }
+        });
+      });
+    </script>
   </body>
 </html>
