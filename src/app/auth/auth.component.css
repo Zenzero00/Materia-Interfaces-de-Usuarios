@@ -1,0 +1,133 @@
+/* Layout base */
+.page {
+  display: flex;
+  height: 100vh; /* Ocupa toda la altura */
+  width: 100vw;
+  align-items: center;
+  justify-content: center;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  background: #f8f9fb;
+}
+
+/* Mitad izquierda - imagen */
+.half-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: linear-gradient(180deg, #f0f4f8 0%, #ffffff 100%);
+}
+.half-left img {
+  max-width: 80%;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+/* Mitad derecha - botones/form */
+.half-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  height: 100%;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  padding: 28px;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(17,24,39,0.06);
+  max-height: 90vh; /* Evita que se salga si los formularios son muy largos */
+  overflow-y: auto;
+}
+
+/* Botones */
+.big-btn {
+  width: 100%;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  border-radius: 8px;
+  border: none;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+.big-btn:active { transform: translateY(1px); }
+
+.btn-login {
+  background: linear-gradient(90deg,#0d6efd,#0b5ed7);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(13,110,253,0.18);
+}
+.btn-signup {
+  background: linear-gradient(90deg,#20c997,#198754);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(32,201,151,0.14);
+}
+
+/* Formularios */
+.form-container {
+  background: #fdfdfd;
+  padding: 15px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #555;
+}
+
+input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid #d6dbe8;
+  font-size: 15px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #9fb3ff;
+  box-shadow: 0 0 0 3px rgba(13,110,253,0.1);
+}
+
+.submit {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border-radius: 8px;
+  background: #0d6efd;
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+.submit:hover { opacity: 0.9; }
+
+/* Animación de entrada */
+.fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsivo */
+@media (max-width: 880px) {
+  .page { flex-direction: column; height: auto; padding: 20px; }
+  .half-left, .half-right { width: 100%; height: auto; }
+  .half-left img { display: none; } /* Ocultamos imagen en movil para ahorrar espacio */
+}

@@ -361,81 +361,83 @@ https://templatemo.com/tm-574-mexant
     </div>
   </section>
 
-  <section class="calculator">
+<section class="calculator">
     <div class="container">
       <div class="row">
-        <!-- Create Account Form -->
         <div class="col-lg-6 mb-4">
-          <div class="section-heading">
-            <h6>Create Account</h6>
-            <h4>Register a new user</h4>
-          </div>
-          <form id="create-account" action="#" method="post" class="p-3 bg-light rounded">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label for="firstName" class="form-label">Nombre</label>
-                <input type="text" class="form-control" id="firstName" name="firstName" required>
-              </div>
-              <div class="col-md-6">
-                <label for="lastName" class="form-label">Apellido</label>
-                <input type="text" class="form-control" id="lastName" name="lastName" required>
-              </div>
-              <div class="col-12">
-                <label for="registerEmail" class="form-label">Correo</label>
-                <input type="email" class="form-control" id="registerEmail" name="registerEmail" required aria-describedby="registerEmailFeedback">
-                <div id="registerEmailFeedback" class="invalid-feedback" style="display:none;color:#d9534f;margin-top:6px;">Por favor ingresa un correo válido (ej: usuario@dominio.com).</div>
-              </div>
-              <div class="col-md-6">
-                <label for="registerPassword" class="form-label">Contraseña</label>
-                <input type="password" class="form-control" id="registerPassword" name="registerPassword" required>
-              </div>
-              <div class="col-md-6">
-                <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
-                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
-              </div>
-              <div class="col-12">
-                <label for="registerRole" class="form-label">Tipo de Usuario</label>
-                <select id="registerRole" name="registerRole" class="form-select">
-                  <option value="normal" selected>Normal</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div class="col-12">
-                <button type="submit" class="btn btn-primary">Crear Cuenta</button>
-              </div>
+          <div class="h-100 d-flex flex-column justify-content-center">
+            <div class="section-heading text-center mb-4">
+              <h6>Únete a nosotros</h6>
+              <h4>Crear Cuenta</h4>
             </div>
-          </form>
+            <form id="create-account" action="#" method="post" class="p-5 bg-white rounded-3 shadow-lg h-100">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="firstName" class="form-label fw-bold">Nombre</label>
+                  <input type="text" class="form-control form-control-lg" id="firstName" name="firstName" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="lastName" class="form-label fw-bold">Apellido</label>
+                  <input type="text" class="form-control form-control-lg" id="lastName" name="lastName" required>
+                </div>
+                <div class="col-12">
+                  <label for="registerEmail" class="form-label fw-bold">Correo Electrónico</label>
+                  <input type="email" class="form-control form-control-lg" id="registerEmail" name="registerEmail" required aria-describedby="registerEmailFeedback">
+                  <div id="registerEmailFeedback" class="invalid-feedback" style="display:none;color:#d9534f;margin-top:6px;">Por favor ingresa un correo válido.</div>
+                </div>
+                <div class="col-md-6">
+                  <label for="registerPassword" class="form-label fw-bold">Contraseña</label>
+                  <input type="password" class="form-control form-control-lg" id="registerPassword" name="registerPassword" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="confirmPassword" class="form-label fw-bold">Confirmar</label>
+                  <input type="password" class="form-control form-control-lg" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                <div class="col-12">
+                  <label for="registerRole" class="form-label fw-bold">Tipo de Usuario</label>
+                  <select id="registerRole" name="registerRole" class="form-select form-select-lg">
+                    <option value="normal" selected>Normal</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+                <div class="col-12 mt-4">
+                  <button type="submit" class="btn btn-primary w-100 py-3 fw-bold" style="background-color: #ff511a; border: none;">Registrarse</button>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
 
-        <!-- Login Form -->
         <div class="col-lg-6 mb-4">
-          <div class="section-heading">
-            <h6>Login</h6>
-            <h4>Access your account</h4>
-          </div>
-          <form id="login" action="#" method="post" class="p-3 bg-light rounded">
-            <div class="row g-3">
-              <div class="col-12">
-                <label for="loginEmail" class="form-label">Correo</label>
-                <input type="email" class="form-control" id="loginEmail" name="loginEmail" required aria-describedby="loginEmailFeedback">
-                <div id="loginEmailFeedback" class="invalid-feedback" style="display:none;color:#d9534f;margin-top:6px;">Por favor ingresa un correo válido (ej: usuario@dominio.com).</div>
-              </div>
-              <div class="col-12">
-                <label for="loginPassword" class="form-label">Contraseña</label>
-                <input type="password" class="form-control" id="loginPassword" name="loginPassword" required>
-              </div>
-              <div class="col-12">
-                <label for="loginRole" class="form-label">Tipo de Usuario</label>
-                <select id="loginRole" name="loginRole" class="form-select">
-                  <option value="normal" selected>Normal</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div class="col-12">
-                <button type="submit" class="btn btn-success">Iniciar Sesión</button>
-              </div>
+          <div class="h-100 d-flex flex-column justify-content-center">
+            <div class="section-heading text-center mb-4">
+              <h6>Bienvenido de nuevo</h6>
+              <h4>Iniciar Sesión</h4>
             </div>
-          </form>
+            <form id="login" action="#" method="post" class="p-5 bg-white rounded-3 shadow-lg h-100 d-flex flex-column justify-content-center">
+              <div class="row g-4">
+                <div class="col-12">
+                  <label for="loginEmail" class="form-label fw-bold">Correo Electrónico</label>
+                  <input type="email" class="form-control form-control-lg" id="loginEmail" name="loginEmail" required aria-describedby="loginEmailFeedback">
+                  <div id="loginEmailFeedback" class="invalid-feedback" style="display:none;color:#d9534f;margin-top:6px;">Por favor ingresa un correo válido.</div>
+                </div>
+                <div class="col-12">
+                  <label for="loginPassword" class="form-label fw-bold">Contraseña</label>
+                  <input type="password" class="form-control form-control-lg" id="loginPassword" name="loginPassword" required>
+                </div>
+                <div class="col-12">
+                  <label for="loginRole" class="form-label fw-bold">Tipo de Usuario</label>
+                  <select id="loginRole" name="loginRole" class="form-select form-select-lg">
+                    <option value="normal" selected>Normal</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+                <div class="col-12 mt-4">
+                  <button type="submit" class="btn btn-success w-100 py-3 fw-bold" style="background-color: #21b06c; border: none;">Acceder</button>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>

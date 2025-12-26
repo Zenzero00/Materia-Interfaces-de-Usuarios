@@ -1,0 +1,51 @@
+<div class="page">
+  <div class="half-left">
+    <img src="https://images.unsplash.com/photo-1542744095-291d1f67b221?w=1200&q=80&auto=format&fit=crop" alt="Imagen Decorativa">
+  </div>
+
+  <div class="half-right">
+    <div class="card">
+      <h2 style="text-align:center; margin-bottom: 20px;">Bienvenido</h2>
+      
+      <button (click)="toggleLogin()" class="big-btn btn-login">
+        Login
+      </button>
+      
+      @if (viewState() === 'login') {
+        <div class="form-container fade-in">
+          <form (ngSubmit)="onSubmitLogin()">
+            <label for="login-email">Correo electrónico</label>
+            <input id="login-email" name="email" type="email" placeholder="tucorreo@ejemplo.com" required>
+
+            <label for="login-password">Contraseña</label>
+            <input id="login-password" name="password" type="password" placeholder="********" required>
+
+            <button type="submit" class="submit">Ingresar</button>
+          </form>
+        </div>
+      }
+
+      <button (click)="toggleRegister()" class="big-btn btn-signup">
+        Sign Up
+      </button>
+
+      @if (viewState() === 'register') {
+        <div class="form-container fade-in">
+          <form (ngSubmit)="onSubmitRegister()">
+            <label for="reg-nombre">Nombre completo</label>
+            <input id="reg-nombre" name="nombre" type="text" placeholder="Tu nombre" required>
+
+            <label for="reg-email">Correo electrónico</label>
+            <input id="reg-email" name="email" type="email" placeholder="tucorreo@ejemplo.com" required>
+
+            <label for="reg-password">Contraseña</label>
+            <input id="reg-password" name="password" type="password" placeholder="Crear contraseña" required>
+
+            <button type="submit" class="submit btn-signup">Registrarse</button>
+          </form>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>
