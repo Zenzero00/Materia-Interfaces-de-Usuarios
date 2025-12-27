@@ -1,66 +1,131 @@
-/* Estilo base de la tarjeta */
 .media-card {
     position: relative;
     border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     height: 250px; /* Altura fija para uniformidad */
+    width: 100%;
+    background-color: #ddd; /* Fondo gris por si la imagen tarda en cargar */
     cursor: pointer;
-}
-
-.media-card img {
+  }
+  
+  .media-card img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Asegura que la imagen llene el cuadro sin deformarse */
-    transition: transform 0.4s;
-}
+    object-fit: cover; /* CLAVE: Esto hace que la imagen llene el cuadro sin deformarse */
+    transition: transform 0.5s ease;
+  }
 
-/* Efecto Hover */
-.media-card:hover img {
+  /* Efecto Zoom al pasar el mouse */
+  .media-card:hover img {
     transform: scale(1.1);
-}
+  }
 
-/* Capa oscura al pasar el mouse */
-.overlay {
+  /* Capa oscura (Overlay) */
+  .overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
     transition: opacity 0.3s;
-}
-
-.media-card:hover .overlay {
+  }
+  
+  .media-card:hover .overlay {
     opacity: 1;
-}
-
-.overlay i {
-    font-size: 40px;
+  }
+  
+  .overlay i {
+    font-size: 30px;
     color: white;
-}
+    background: rgba(255,255,255,0.2);
+    padding: 15px;
+    border-radius: 50%;
+  }
 
-/* Estilos específicos para VIDEO */
-.video-card .play-icon {
+  /* Estilos específicos para VIDEO */
+  .video-card .play-icon {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 60px;
+    font-size: 50px;
     color: #fff;
-    text-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    z-index: 2;
-}
-
-.video-card .video-label {
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+    transition: transform 0.3s;
+  }
+  
+  .video-card:hover .play-icon {
+    transform: translate(-50%, -50%) scale(1.2);
+    color: #ff511a; /* Naranja Mexant */
+  }
+  
+  .video-card .video-label {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
     padding: 15px;
-    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color: white;
-    font-weight: bold;
-    z-index: 2;
-}
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  /* === ARREGLO DE FLECHAS (NAV) === */
+  /* Ocultamos el texto "prev/next" que trae por defecto */
+  .owl-theme .owl-nav [class*='owl-'] {
+    color: #FFF;
+    font-size: 18px; 
+    margin: 5px;
+    padding: 4px 7px;
+    background: #ff511a; /* Naranja base */
+    display: inline-block;
+    cursor: pointer;
+    border-radius: 50%; /* Botón redondo */
+    width: 40px;
+    height: 40px;
+    line-height: 32px; /* Centrar verticalmente */
+    text-align: center;
+    transition: all 0.3s;
+  }
+
+  /* Posicionamiento de las flechas a los costados */
+  .custom-nav .owl-nav {
+    position: absolute;
+    top: 40%;
+    width: 100%;
+    left: 0;
+    transform: translateY(-50%);
+    pointer-events: none; /* Para que el click pase a través del contenedor */
+  }
+
+  .custom-nav .owl-prev, 
+  .custom-nav .owl-next {
+    position: absolute;
+    pointer-events: auto; /* Reactivar clicks en los botones */
+  }
+
+  .custom-nav .owl-prev {
+    left: -20px; /* Mover un poco afuera a la izquierda */
+  }
+
+  .custom-nav .owl-next {
+    right: -20px; /* Mover un poco afuera a la derecha */
+  }
+
+  /* Hover en las flechas */
+  .owl-theme .owl-nav [class*='owl-']:hover {
+    background: #21b06c; /* Verde Mexant al pasar el mouse */
+    color: #FFF;
+    text-decoration: none;
+    transform: scale(1.1);
+  }
+
+  /* Responsivo: En movil las flechas no deben salirse */
+  @media (max-width: 768px) {
+    .custom-nav .owl-prev { left: 0; }
+    .custom-nav .owl-next { right: 0; }
+  }
