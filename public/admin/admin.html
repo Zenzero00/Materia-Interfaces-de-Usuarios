@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración</title>
     <link rel="stylesheet" href="admin.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Bootstrap CSS -->
     <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -16,6 +18,7 @@
     <link rel="stylesheet" href="../assets/css/animate.css">
     <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css">
 </head>
+
 <body>
     <div class="admin-container">
         <!-- Sidebar -->
@@ -79,7 +82,7 @@
                 <div class="section-header">
                     <div class="section-title">Vista Previa del Sitio Web</div>
                     <div class="preview-actions">
-                        <button class="btn-secondary" id="refresh-preview">
+                        <button class="btn-refresh" id="refresh-preview">
                             <i class="fas fa-sync-alt"></i> Actualizar
                         </button>
                         <button class="btn-primary" id="view-site">
@@ -87,7 +90,7 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="preview-container">
                     <iframe src="../index.html" class="website-preview" id="site-preview" frameborder="0"></iframe>
                 </div>
@@ -97,6 +100,13 @@
             <div class="config-section" id="colors-section">
                 <div class="section-header">
                     <div class="section-title">Configuración de Colores</div>
+                </div>
+
+                <!-- Input para nombre de paleta -->
+                <div class="palette-name-section mb-4">
+                    <label for="palette-name" class="form-label fw-bold">Nombre de la Paleta</label>
+                    <input type="text" id="palette-name" class="form-control" placeholder="Ej: Tema Azul Corporativo"
+                        value="">
                 </div>
 
                 <div class="colors-grid">
@@ -155,28 +165,28 @@
 
                 <!-- Table to record color changes (UI only) -->
                 <div class="colors-changes-table mt-4">
-                <h5>Historial de cambios de color</h5>
-                <div class="table-responsive">
-                    <table id="colors-changes" class="table table-striped table-bordered">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Color 1 (Primary)</th>
-                                <th>Color 2 (Secondary)</th>
-                                <th>Color 3 (Accent)</th>
-                                <th>Color 4 (Neutral)</th>
-                                <th>Fecha / Hora</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Filas añadidas dinámicamente por JS -->
-                        </tbody>
-                    </table>
+                    <h5>Historial de cambios de color</h5>
+                    <div class="table-responsive">
+                        <table id="colors-changes" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Color 1 (Primary)</th>
+                                    <th>Color 2 (Secondary)</th>
+                                    <th>Color 3 (Accent)</th>
+                                    <th>Color 4 (Neutral)</th>
+                                    <th>Fecha / Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Filas añadidas dinámicamente por JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
 
                 <div class="form-actions">
-                    <button class="btn-secondary">Cancelar</button>
                     <button class="btn-primary" id="apply-colors">Aplicar Cambios</button>
                 </div>
             </div>
@@ -249,7 +259,8 @@
 
                         <div class="typography-item">
                             <h4>Importar Fuente (deshabilitado)</h4>
-                            <p>La importación de fuentes locales ha sido deshabilitada. Usa las listas desplegables de Fuente Principal y Secundaria para elegir fuentes disponibles.</p>
+                            <p>La importación de fuentes locales ha sido deshabilitada. Usa las listas desplegables de
+                                Fuente Principal y Secundaria para elegir fuentes disponibles.</p>
                         </div>
                     </div>
                 </div>
@@ -259,7 +270,9 @@
                     <div class="preview-content" id="typography-preview">
                         <h2>Encabezado Principal</h2>
                         <h4>Encabezado Secundario</h4>
-                        <p>Este es un párrafo de ejemplo que muestra cómo se verá el texto con la configuración actual de tipografía. Puedes ver cómo se comporta el interlineado, el tamaño y el peso de la fuente.</p>
+                        <p>Este es un párrafo de ejemplo que muestra cómo se verá el texto con la configuración actual
+                            de tipografía. Puedes ver cómo se comporta el interlineado, el tamaño y el peso de la
+                            fuente.</p>
                         <p class="small-text">Este es un texto más pequeño para elementos secundarios.</p>
                     </div>
                 </div>
@@ -288,7 +301,6 @@
                 </div>
 
                 <div class="form-actions">
-                    <button class="btn-secondary">Cancelar</button>
                     <button class="btn-primary" id="apply-typography">Aplicar Cambios</button>
                 </div>
             </div>
@@ -375,14 +387,15 @@
         </div>
     </div> -->
 
-<!-- Scripts -->
-    <script src="../vendor/jquery/jquery.min.js"></script>
-    <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="../assets/js/isotope.min.js"></script>
-    <script src="../assets/js/owl-carousel.js"></script>
-    <script src="../assets/js/tabs.js"></script>
-    <script src="../assets/js/swiper.js"></script>
-    <script src="../assets/js/custom.js"></script>
-    <script src="admin.js"></script>
+            <!-- Scripts -->
+            <script src="../vendor/jquery/jquery.min.js"></script>
+            <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+            <script src="../assets/js/isotope.min.js"></script>
+            <script src="../assets/js/owl-carousel.js"></script>
+            <script src="../assets/js/tabs.js"></script>
+            <script src="../assets/js/swiper.js"></script>
+            <script src="../assets/js/custom.js"></script>
+            <script src="admin.js"></script>
 </body>
+
 </html>

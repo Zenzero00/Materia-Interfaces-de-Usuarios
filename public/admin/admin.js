@@ -1,23 +1,81 @@
 // Admin Panel JavaScript
 document.addEventListener('DOMContentLoaded', function () {
-    // ---------- Color picker functionality (unchanged) ----------
+    // ---------- Color picker functionality ----------
     const colorInputs = document.querySelectorAll('input[type="color"]');
     const colorTextInputs = document.querySelectorAll('input[type="text"][id$="-hex"]');
+
+    // Sync color picker -> hex input AND update preview
     if (colorInputs && colorTextInputs && colorInputs.length === colorTextInputs.length) {
         colorInputs.forEach((input, index) => {
             input.addEventListener('input', function () {
-                if (colorTextInputs[index]) colorTextInputs[index].value = this.value;
+                if (colorTextInputs[index]) {
+                    colorTextInputs[index].value = this.value;
+                }
+                // Update color preview
+                const preview = this.closest('.color-item')?.querySelector('.color-preview');
+                if (preview) preview.style.backgroundColor = this.value;
             });
         });
 
+        // Sync hex input -> color picker (with validation: # fixed + max 6 hex chars)
         colorTextInputs.forEach((input, index) => {
-            input.addEventListener('input', function () {
-                if (this.value.match(/^#[0-9A-F]{6}$/i) && colorInputs[index]) {
-                    colorInputs[index].value = this.value;
+            input.addEventListener('input', function (e) {
+                let val = this.value;
+
+                // Ensure # is always at the start
+                if (!val.startsWith('#')) {
+                    val = '#' + val.replace(/#/g, '');
+                }
+
+                // Remove any non-hex characters after the #
+                val = '#' + val.slice(1).replace(/[^0-9A-Fa-f]/g, '');
+
+                // Limit to 6 hex characters after the #
+                if (val.length > 7) {
+                    val = val.slice(0, 7);
+                }
+
+                // Update the input value
+                this.value = val.toUpperCase();
+
+                // Sync with color picker if valid 6-digit hex
+                if (val.match(/^#[0-9A-Fa-f]{6}$/)) {
+                    if (colorInputs[index]) {
+                        colorInputs[index].value = val;
+                        // Update color preview
+                        const preview = colorInputs[index].closest('.color-item')?.querySelector('.color-preview');
+                        if (preview) preview.style.backgroundColor = val;
+                    }
+                }
+            });
+
+            // Ensure # is always present on focus
+            input.addEventListener('focus', function () {
+                if (!this.value.startsWith('#')) {
+                    this.value = '#' + this.value;
                 }
             });
         });
     }
+
+    // ---------- Reset buttons functionality ----------
+    const resetButtons = document.querySelectorAll('.btn-reset');
+    resetButtons.forEach((btn) => {
+        btn.addEventListener('click', function () {
+            const colorItem = this.closest('.color-item');
+            if (!colorItem) return;
+
+            const colorInput = colorItem.querySelector('input[type="color"]');
+            const hexInput = colorItem.querySelector('input[type="text"][id$="-hex"]');
+            const preview = colorItem.querySelector('.color-preview');
+
+            // Reset to white
+            const resetColor = '#ffffff';
+            if (colorInput) colorInput.value = resetColor;
+            if (hexInput) hexInput.value = resetColor;
+            if (preview) preview.style.backgroundColor = resetColor;
+        });
+    });
 
     // Apply colors button
     const applyColorsBtn = document.getElementById('apply-colors');
@@ -27,6 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const c2 = document.getElementById('color-2')?.value || '#ff511a';
             const c3 = document.getElementById('color-3')?.value || '#212741';
             const c4 = document.getElementById('color-4')?.value || '#ffffff';
+            const paletteName = document.getElementById('palette-name')?.value || 'Sin nombre';
 
             // Aplicar colores al admin
             if (c1) document.documentElement.style.setProperty('--primary-color', c1);
@@ -42,9 +101,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 neutral: c4     // Texto sobre botones, textos sobre fondos oscuros
             });
 
-            // Guardar en historial
+            // Guardar en historial con nombre de paleta
             try {
-                const colorSettings = { primary: c1, secondary: c2, accent: c3, neutral: c4 };
+                const colorSettings = { name: paletteName, primary: c1, secondary: c2, accent: c3, neutral: c4 };
                 localStorage.setItem('admin_color_settings', JSON.stringify(colorSettings));
                 const ch = loadColorHistory();
                 ch.push(Object.assign({}, colorSettings, { timestamp: Date.now() }));
@@ -187,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function () {
         serviceItems.forEach(item => {
             if (colors.neutral) {
                 item.style.backgroundColor = colors.neutral;
-                item.style.boxShadow = `0px 0px 15px ${colors.accent}20`;
+                item.style.boxShadow = `0px 0px 15px ${colors.accent} 20`;
             }
         });
 
@@ -246,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 form.style.backgroundColor = colors.neutral;
             }
             if (colors.accent) {
-                form.style.border = `1px solid ${colors.accent}30`;
+                form.style.border = `1px solid ${colors.accent} 30`;
             }
         });
 
@@ -350,14 +409,47 @@ document.addEventListener('DOMContentLoaded', function () {
             if (colors.neutral) table.style.backgroundColor = colors.neutral;
             if (colors.accent) {
                 table.style.color = colors.accent;
-                table.style.borderBottomColor = `${colors.accent}20`;
+                table.style.borderBottomColor = `${colors.accent} 20`;
             }
         });
     }
 
     // ---------- Color history (similar to typography) ----------
-    function loadColorHistory() { try { return JSON.parse(localStorage.getItem('admin_color_history') || '[]'); } catch (e) { return []; } }
-    function saveColorHistory(arr) { try { localStorage.setItem('admin_color_history', JSON.stringify(arr)); } catch (e) { console.warn('No se pudo guardar historial de colores', e); } }
+    // Default Mexant colors - always first entry, protected (can't edit/delete)
+    const MEXANT_DEFAULT_COLORS = {
+        name: 'Mexant (Colores Originales)',
+        primary: '#43ba7f',
+        secondary: '#ff511a',
+        accent: '#212741',
+        neutral: '#ffffff',
+        timestamp: null, // No timestamp for default
+        isProtected: true
+    };
+
+    function loadColorHistory() {
+        try {
+            const saved = JSON.parse(localStorage.getItem('admin_color_history') || '[]');
+            // Ensure Mexant default is always first
+            const hasDefault = saved.length > 0 && saved[0].isProtected;
+            if (!hasDefault) {
+                return [MEXANT_DEFAULT_COLORS, ...saved];
+            }
+            // Update the protected entry in case saved version is outdated
+            saved[0] = MEXANT_DEFAULT_COLORS;
+            return saved;
+        } catch (e) {
+            return [MEXANT_DEFAULT_COLORS];
+        }
+    }
+    function saveColorHistory(arr) {
+        try {
+            // Don't save the protected entry, we'll add it on load
+            const toSave = arr.filter(entry => !entry.isProtected);
+            localStorage.setItem('admin_color_history', JSON.stringify(toSave));
+        } catch (e) {
+            console.warn('No se pudo guardar historial de colores', e);
+        }
+    }
 
     function renderColorHistory() {
         const tbody = document.querySelector('#colors-changes tbody');
@@ -370,26 +462,54 @@ document.addEventListener('DOMContentLoaded', function () {
             idTd.textContent = (idx + 1).toString();
             tr.appendChild(idTd);
 
-            const pTd = document.createElement('td');
-            pTd.textContent = entry.primary || '';
-            tr.appendChild(pTd);
+            // Nombre de la paleta
+            const nameTd = document.createElement('td');
+            nameTd.textContent = entry.name || 'Sin nombre';
+            tr.appendChild(nameTd);
 
-            const sTd = document.createElement('td');
-            sTd.textContent = entry.secondary || '';
-            tr.appendChild(sTd);
+            // Helper function to create color cell with preview box
+            const createColorCell = (colorValue) => {
+                const td = document.createElement('td');
 
-            const aTd = document.createElement('td');
-            aTd.textContent = entry.accent || '';
-            tr.appendChild(aTd);
+                // Use a wrapper div for flexbox layout instead of td
+                const wrapper = document.createElement('div');
+                wrapper.style.display = 'flex';
+                wrapper.style.alignItems = 'center';
+                wrapper.style.gap = '8px';
 
-            const nTd = document.createElement('td');
-            nTd.textContent = entry.neutral || '';
-            tr.appendChild(nTd);
+                const colorBox = document.createElement('span');
+                colorBox.style.display = 'inline-block';
+                colorBox.style.width = '20px';
+                colorBox.style.height = '20px';
+                colorBox.style.borderRadius = '4px';
+                colorBox.style.backgroundColor = colorValue || '#fff';
+                colorBox.style.border = '1px solid #ddd';
+                colorBox.style.flexShrink = '0';
+
+                const hexText = document.createElement('span');
+                hexText.textContent = colorValue || '';
+
+                wrapper.appendChild(colorBox);
+                wrapper.appendChild(hexText);
+                td.appendChild(wrapper);
+                return td;
+            };
+
+            tr.appendChild(createColorCell(entry.primary));
+            tr.appendChild(createColorCell(entry.secondary));
+            tr.appendChild(createColorCell(entry.accent));
+            tr.appendChild(createColorCell(entry.neutral));
 
             // ELIMINADO: td para color 5
 
             const timeTd = document.createElement('td');
-            timeTd.textContent = entry.timestamp ? new Date(entry.timestamp).toLocaleString() : '';
+            if (entry.isProtected) {
+                timeTd.textContent = 'Original';
+                timeTd.style.fontWeight = 'bold';
+                timeTd.style.color = '#43ba7f';  // Green color for protected
+            } else {
+                timeTd.textContent = entry.timestamp ? new Date(entry.timestamp).toLocaleString() : '';
+            }
             tr.appendChild(timeTd);
 
             tr.addEventListener('contextmenu', function (ev) {
@@ -433,12 +553,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showColorContextMenu(x, y, index) {
         const menu = ensureColorContextMenu();
+        const hist = loadColorHistory();
+        const entry = hist[index];
+        const isProtected = entry && entry.isProtected;
+
         menu.style.left = x + 'px';
         menu.style.top = y + 'px';
         menu.style.display = 'block';
+
         Array.from(menu.children).forEach(child => {
+            const action = child.dataset.action;
+
+            // Disable edit and delete for protected entries
+            if (isProtected && (action === 'editar' || action === 'eliminar')) {
+                child.style.opacity = '0.4';
+                child.style.cursor = 'not-allowed';
+                child.style.pointerEvents = 'none';
+            } else {
+                child.style.opacity = '1';
+                child.style.cursor = 'pointer';
+                child.style.pointerEvents = 'auto';
+            }
+
             child.onclick = function (ev) {
-                const action = child.dataset.action;
                 handleColorContextAction(action, index);
                 menu.style.display = 'none';
             };
@@ -446,33 +583,26 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function handleColorContextAction(action, index) {
+        console.log('handleColorContextAction called with action:', action, 'index:', index);
         const hist = loadColorHistory();
         const entry = hist[index];
         if (!entry) return;
+
+        // Block edit and delete for protected entries
+        if (entry.isProtected && (action === 'editar' || action === 'eliminar')) {
+            alert('Esta entrada está protegida y no se puede ' + (action === 'editar' ? 'editar' : 'eliminar') + '.');
+            return;
+        }
+
         if (action === 'editar') {
-            try {
-                const h = loadColorHistory();
-                const newEntry = {
-                    primary: document.getElementById('color-1')?.value || entry.primary,
-                    secondary: document.getElementById('color-2')?.value || entry.secondary,
-                    accent: document.getElementById('color-3')?.value || entry.accent,
-                    danger: document.getElementById('color-4')?.value || entry.danger,
-                    neutral: document.getElementById('color-5')?.value || entry.neutral,
-                    timestamp: Date.now()
-                };
-                h[index] = newEntry;
-                saveColorHistory(h);
-                renderColorHistory();
-                // apply and update previews
-                applyColorsToUI(newEntry);
-                alert('Entrada de color actualizada con los valores actuales.');
-            } catch (e) { console.warn('Error actualizando entrada de color', e); }
+            console.log('Calling showColorEditConfirmation');
+            showColorEditConfirmation(index, entry);
         } else if (action === 'eliminar') {
+            console.log('Calling showColorDeleteConfirmation');
             showColorDeleteConfirmation(index);
         } else if (action === 'aplicar') {
-            applyColorsToUI({ primary: entry.primary, secondary: entry.secondary, accent: entry.accent, danger: entry.danger, neutral: entry.neutral });
-            try { localStorage.setItem('admin_color_settings', JSON.stringify({ primary: entry.primary, secondary: entry.secondary, accent: entry.accent, danger: entry.danger, neutral: entry.neutral })); } catch (e) { }
-            alert('Configuración de colores aplicada desde el historial.');
+            console.log('Calling showColorApplyConfirmation');
+            showColorApplyConfirmation(index, entry);
         }
     }
 
@@ -559,6 +689,216 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             modal.style.display = 'flex';
         } catch (e) { }
+    }
+
+    // ---------- Color Edit Confirmation Modal ----------
+    let colorEditOverlay = null;
+    function ensureColorEditModal() {
+        if (colorEditOverlay) return colorEditOverlay;
+        colorEditOverlay = document.createElement('div');
+        colorEditOverlay.className = 'admin-confirm-overlay';
+        colorEditOverlay.innerHTML = `
+            <div class="admin-confirm" role="dialog" aria-modal="true">
+                <h3>Editar Paleta de Colores</h3>
+                <p>Ingresa un nuevo nombre para esta paleta:</p>
+                <input type="text" id="edit-palette-name" class="form-control" placeholder="Nombre de la paleta" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px;">
+                <div class="confirm-actions">
+                    <button class="btn-cancel">Cancelar</button>
+                    <button class="btn-confirm" style="background: #1B73E8 !important;">Guardar</button>
+                </div>
+            </div>`;
+        document.body.appendChild(colorEditOverlay);
+
+        // Apply styles
+        colorEditOverlay.style.position = 'fixed';
+        colorEditOverlay.style.left = '0';
+        colorEditOverlay.style.top = '0';
+        colorEditOverlay.style.right = '0';
+        colorEditOverlay.style.bottom = '0';
+        colorEditOverlay.style.display = 'none';
+        colorEditOverlay.style.alignItems = 'center';
+        colorEditOverlay.style.justifyContent = 'center';
+        colorEditOverlay.style.background = 'rgba(0,0,0,0.36)';
+        colorEditOverlay.style.zIndex = '10000';
+
+        const dialog = colorEditOverlay.querySelector('.admin-confirm');
+        if (dialog) {
+            dialog.style.background = '#ffffff';
+            dialog.style.color = '#111111';
+            dialog.style.padding = '20px';
+            dialog.style.borderRadius = '8px';
+            dialog.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)';
+            dialog.style.maxWidth = '520px';
+            dialog.style.width = '90%';
+        }
+
+        const btnCancel = colorEditOverlay.querySelector('.btn-cancel');
+        const btnConfirm = colorEditOverlay.querySelector('.btn-confirm');
+        if (btnCancel) {
+            btnCancel.style.background = '#f0f0f0';
+            btnCancel.style.color = '#111111';
+            btnCancel.style.border = '1px solid rgba(0,0,0,0.08)';
+            btnCancel.style.padding = '8px 12px';
+            btnCancel.style.borderRadius = '4px';
+            btnCancel.style.cursor = 'pointer';
+        }
+        if (btnConfirm) {
+            btnConfirm.style.background = '#1B73E8';
+            btnConfirm.style.color = '#ffffff';
+            btnConfirm.style.border = 'none';
+            btnConfirm.style.padding = '8px 12px';
+            btnConfirm.style.borderRadius = '4px';
+            btnConfirm.style.cursor = 'pointer';
+        }
+
+        const actions = colorEditOverlay.querySelector('.confirm-actions');
+        if (actions) { actions.style.display = 'flex'; actions.style.gap = '8px'; actions.style.justifyContent = 'flex-end'; actions.style.marginTop = '12px'; }
+
+        // Handlers
+        colorEditOverlay.querySelector('.btn-cancel').addEventListener('click', () => { colorEditOverlay.style.display = 'none'; });
+        colorEditOverlay.querySelector('.btn-confirm').addEventListener('click', () => {
+            const idx = parseInt(colorEditOverlay.dataset.editIndex, 10);
+            const newName = colorEditOverlay.querySelector('#edit-palette-name').value.trim() || 'Sin nombre';
+            try {
+                const h = loadColorHistory();
+                if (h[idx] && !h[idx].isProtected) {
+                    h[idx].name = newName;
+                    h[idx].timestamp = Date.now();
+                    saveColorHistory(h);
+                    renderColorHistory();
+                }
+            } catch (e) { console.warn('Error editando entrada de colores', e); }
+            colorEditOverlay.style.display = 'none';
+        });
+
+        return colorEditOverlay;
+    }
+
+    function showColorEditConfirmation(index, entry) {
+        const modal = ensureColorEditModal();
+        modal.dataset.editIndex = index;
+        modal.querySelector('#edit-palette-name').value = entry.name || '';
+        modal.style.display = 'flex';
+    }
+
+    // ---------- Color Apply Confirmation Modal ----------
+    let colorApplyOverlay = null;
+    function ensureColorApplyModal() {
+        if (colorApplyOverlay) return colorApplyOverlay;
+        colorApplyOverlay = document.createElement('div');
+        colorApplyOverlay.className = 'admin-confirm-overlay';
+        colorApplyOverlay.innerHTML = `
+            <div class="admin-confirm" role="dialog" aria-modal="true">
+                <h3>Aplicar Paleta de Colores</h3>
+                <p>¿Estás seguro de que deseas aplicar esta paleta de colores?</p>
+                <div class="palette-preview" style="display: flex; gap: 8px; margin: 15px 0;">
+                    <div class="preview-color" data-color="primary" style="width: 40px; height: 40px; border-radius: 6px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"></div>
+                    <div class="preview-color" data-color="secondary" style="width: 40px; height: 40px; border-radius: 6px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"></div>
+                    <div class="preview-color" data-color="accent" style="width: 40px; height: 40px; border-radius: 6px; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"></div>
+                    <div class="preview-color" data-color="neutral" style="width: 40px; height: 40px; border-radius: 6px; border: 2px solid #ddd; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"></div>
+                </div>
+                <div class="confirm-actions">
+                    <button class="btn-cancel">Cancelar</button>
+                    <button class="btn-confirm" style="background: #34A853 !important;">Aplicar</button>
+                </div>
+            </div>`;
+        document.body.appendChild(colorApplyOverlay);
+
+        // Apply styles
+        colorApplyOverlay.style.position = 'fixed';
+        colorApplyOverlay.style.left = '0';
+        colorApplyOverlay.style.top = '0';
+        colorApplyOverlay.style.right = '0';
+        colorApplyOverlay.style.bottom = '0';
+        colorApplyOverlay.style.display = 'none';
+        colorApplyOverlay.style.alignItems = 'center';
+        colorApplyOverlay.style.justifyContent = 'center';
+        colorApplyOverlay.style.background = 'rgba(0,0,0,0.36)';
+        colorApplyOverlay.style.zIndex = '10000';
+
+        const dialog = colorApplyOverlay.querySelector('.admin-confirm');
+        if (dialog) {
+            dialog.style.background = '#ffffff';
+            dialog.style.color = '#111111';
+            dialog.style.padding = '20px';
+            dialog.style.borderRadius = '8px';
+            dialog.style.boxShadow = '0 6px 20px rgba(0,0,0,0.2)';
+            dialog.style.maxWidth = '520px';
+            dialog.style.width = '90%';
+        }
+
+        const btnCancel = colorApplyOverlay.querySelector('.btn-cancel');
+        const btnConfirm = colorApplyOverlay.querySelector('.btn-confirm');
+        if (btnCancel) {
+            btnCancel.style.background = '#f0f0f0';
+            btnCancel.style.color = '#111111';
+            btnCancel.style.border = '1px solid rgba(0,0,0,0.08)';
+            btnCancel.style.padding = '8px 12px';
+            btnCancel.style.borderRadius = '4px';
+            btnCancel.style.cursor = 'pointer';
+        }
+        if (btnConfirm) {
+            btnConfirm.style.background = '#34A853';
+            btnConfirm.style.color = '#ffffff';
+            btnConfirm.style.border = 'none';
+            btnConfirm.style.padding = '8px 12px';
+            btnConfirm.style.borderRadius = '4px';
+            btnConfirm.style.cursor = 'pointer';
+        }
+
+        const actions = colorApplyOverlay.querySelector('.confirm-actions');
+        if (actions) { actions.style.display = 'flex'; actions.style.gap = '8px'; actions.style.justifyContent = 'flex-end'; actions.style.marginTop = '12px'; }
+
+        // Handlers
+        colorApplyOverlay.querySelector('.btn-cancel').addEventListener('click', () => { colorApplyOverlay.style.display = 'none'; });
+        colorApplyOverlay.querySelector('.btn-confirm').addEventListener('click', () => {
+            const idx = parseInt(colorApplyOverlay.dataset.applyIndex, 10);
+            try {
+                const h = loadColorHistory();
+                const entry = h[idx];
+                if (entry) {
+                    applyColorsToUI({ primary: entry.primary, secondary: entry.secondary, accent: entry.accent, neutral: entry.neutral });
+                    localStorage.setItem('admin_color_settings', JSON.stringify({ primary: entry.primary, secondary: entry.secondary, accent: entry.accent, neutral: entry.neutral }));
+
+                    // Update color inputs
+                    if (document.getElementById('color-1')) document.getElementById('color-1').value = entry.primary || '';
+                    if (document.getElementById('color-1-hex')) document.getElementById('color-1-hex').value = entry.primary || '';
+                    if (document.getElementById('color-2')) document.getElementById('color-2').value = entry.secondary || '';
+                    if (document.getElementById('color-2-hex')) document.getElementById('color-2-hex').value = entry.secondary || '';
+                    if (document.getElementById('color-3')) document.getElementById('color-3').value = entry.accent || '';
+                    if (document.getElementById('color-3-hex')) document.getElementById('color-3-hex').value = entry.accent || '';
+                    if (document.getElementById('color-4')) document.getElementById('color-4').value = entry.neutral || '';
+                    if (document.getElementById('color-4-hex')) document.getElementById('color-4-hex').value = entry.neutral || '';
+                    if (document.getElementById('palette-name')) document.getElementById('palette-name').value = entry.name || '';
+
+                    // Update color previews
+                    document.querySelectorAll('.color-item').forEach((item, i) => {
+                        const preview = item.querySelector('.color-preview');
+                        if (preview) {
+                            const colors = [entry.primary, entry.secondary, entry.accent, entry.neutral];
+                            if (colors[i]) preview.style.backgroundColor = colors[i];
+                        }
+                    });
+                }
+            } catch (e) { console.warn('Error aplicando colores', e); }
+            colorApplyOverlay.style.display = 'none';
+        });
+
+        return colorApplyOverlay;
+    }
+
+    function showColorApplyConfirmation(index, entry) {
+        const modal = ensureColorApplyModal();
+        modal.dataset.applyIndex = index;
+
+        // Update preview colors
+        const previews = modal.querySelectorAll('.preview-color');
+        previews.forEach(p => {
+            const colorType = p.dataset.color;
+            if (entry[colorType]) p.style.backgroundColor = entry[colorType];
+        });
+
+        modal.style.display = 'flex';
     }
 
     function applyColorsToUI(settings) {
@@ -873,48 +1213,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 menu.style.display = 'none';
             };
         });
-    }
-
-    function handleColorContextAction(action, index) {
-        const hist = loadColorHistory();
-        const entry = hist[index];
-        if (!entry) return;
-        if (action === 'editar') {
-            try {
-                const h = loadColorHistory();
-                const newEntry = {
-                    primary: document.getElementById('color-1')?.value || entry.primary,
-                    secondary: document.getElementById('color-2')?.value || entry.secondary,
-                    accent: document.getElementById('color-3')?.value || entry.accent,
-                    neutral: document.getElementById('color-4')?.value || entry.neutral,
-                    timestamp: Date.now()
-                };
-                h[index] = newEntry;
-                saveColorHistory(h);
-                renderColorHistory();
-                // apply and update previews
-                applyColorsToUI(newEntry);
-                alert('Entrada de color actualizada con los valores actuales.');
-            } catch (e) { console.warn('Error actualizando entrada de color', e); }
-        } else if (action === 'eliminar') {
-            showColorDeleteConfirmation(index);
-        } else if (action === 'aplicar') {
-            applyColorsToUI({
-                primary: entry.primary,
-                secondary: entry.secondary,
-                accent: entry.accent,
-                neutral: entry.neutral
-            });
-            try {
-                localStorage.setItem('admin_color_settings', JSON.stringify({
-                    primary: entry.primary,
-                    secondary: entry.secondary,
-                    accent: entry.accent,
-                    neutral: entry.neutral
-                }));
-            } catch (e) { }
-            alert('Configuración de colores aplicada desde el historial.');
-        }
     }
 
     // ---------- Styled confirmation modal for delete ----------
