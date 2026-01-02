@@ -1109,11 +1109,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Cache for loaded custom fonts
     let customFontsCache = [];
 
-    // Load custom fonts and update selectors (no UI list)
+    // Load custom fonts, update selectors, and re-render history
     function loadAndRefreshCustomFonts() {
         loadCustomFonts().then(fonts => {
             customFontsCache = fonts;
             refreshFontSelectors();
+            // Re-render history to apply font styles now that fonts are loaded
+            if (typeof renderHistory === 'function') {
+                renderHistory();
+            }
         }).catch(e => {
             console.warn('Error cargando fuentes personalizadas:', e);
         });
@@ -1327,18 +1331,58 @@ document.addEventListener('DOMContentLoaded', function () {
             idTd.style.fontWeight = entry.isProtected ? 'bold' : 'normal';
             tr.appendChild(idTd);
 
-            // Format font names (show star for custom fonts)
+            // Format font names (show star for custom fonts) and apply font style
             const formatFont = (f) => {
                 if (!f) return '';
                 if (f.startsWith('custom:')) return '⭐ ' + f.replace('custom:', '');
                 return f;
             };
 
-            const pTd = document.createElement('td'); pTd.textContent = formatFont(entry.primary); tr.appendChild(pTd);
-            const sTd = document.createElement('td'); sTd.textContent = formatFont(entry.secondary); tr.appendChild(sTd);
-            const tTd = document.createElement('td'); tTd.textContent = (entry.titleSize || '') + 'px'; tr.appendChild(tTd);
-            const subTd = document.createElement('td'); subTd.textContent = (entry.subtitleSize || '') + 'px'; tr.appendChild(subTd);
-            const parTd = document.createElement('td'); parTd.textContent = (entry.paragraphSize || '') + 'px'; tr.appendChild(parTd);
+            // Get the actual font family name for styling
+            const getFontFamily = (f) => {
+                if (!f) return 'inherit';
+                if (f.startsWith('custom:')) {
+                    const customName = f.replace('custom:', '');
+                    // Inject custom font if available
+                    const fontData = customFontsCache.find(cf => cf.name === customName);
+                    if (fontData && fontData.blob) {
+                        injectCustomFontFace(document, customName, fontData.blob);
+                    }
+                    return `'${customName}', sans-serif`;
+                }
+                // Inject Google font into admin document
+                injectGoogleFontInDoc(document, f);
+                return `'${f}', sans-serif`;
+            };
+
+            // Primary font cell - styled with the font itself
+            const pTd = document.createElement('td');
+            pTd.textContent = formatFont(entry.primary);
+            pTd.style.fontFamily = getFontFamily(entry.primary);
+            tr.appendChild(pTd);
+
+            // Secondary font cell - styled with the font itself
+            const sTd = document.createElement('td');
+            sTd.textContent = formatFont(entry.secondary);
+            sTd.style.fontFamily = getFontFamily(entry.secondary);
+            tr.appendChild(sTd);
+
+
+            const tTd = document.createElement('td');
+            tTd.textContent = (entry.titleSize || '') + 'px';
+            if (entry.titleSize) tTd.style.fontSize = entry.titleSize + 'px';
+            tr.appendChild(tTd);
+
+            const subTd = document.createElement('td');
+            subTd.textContent = (entry.subtitleSize || '') + 'px';
+            if (entry.subtitleSize) subTd.style.fontSize = entry.subtitleSize + 'px';
+            tr.appendChild(subTd);
+
+            const parTd = document.createElement('td');
+            parTd.textContent = (entry.paragraphSize || '') + 'px';
+            if (entry.paragraphSize) parTd.style.fontSize = entry.paragraphSize + 'px';
+            tr.appendChild(parTd);
+
             const timeTd = document.createElement('td'); timeTd.textContent = entry.timestamp ? new Date(entry.timestamp).toLocaleString() : ''; tr.appendChild(timeTd);
 
             // attach context menu handler to row
