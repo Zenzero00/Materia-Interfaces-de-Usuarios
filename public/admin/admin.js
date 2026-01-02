@@ -1,5 +1,28 @@
 // Admin Panel JavaScript
 document.addEventListener('DOMContentLoaded', function () {
+    // ---------- Display logged-in user ----------
+    (function displayCurrentUser() {
+        try {
+            const session = JSON.parse(localStorage.getItem('admin_session') || '{}');
+            const firstName = session.firstName || 'Admin';
+            const lastName = session.lastName || 'User';
+            const fullName = firstName + ' ' + lastName;
+
+            const userNameEl = document.getElementById('user-name');
+            const userAvatarEl = document.getElementById('user-avatar');
+
+            if (userNameEl) {
+                userNameEl.textContent = fullName;
+            }
+            if (userAvatarEl) {
+                userAvatarEl.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(fullName) + '&background=1B73E8&color=fff';
+                userAvatarEl.alt = fullName;
+            }
+        } catch (e) {
+            console.warn('No se pudo cargar la sesión del usuario:', e);
+        }
+    })();
+
     // ---------- Color picker functionality ----------
     const colorInputs = document.querySelectorAll('input[type="color"]');
     const colorTextInputs = document.querySelectorAll('input[type="text"][id$="-hex"]');

@@ -896,6 +896,13 @@ https://templatemo.com/tm-574-mexant
           alert('Usuario creado correctamente.');
 
           if (role === 'admin') {
+            // Save current user session for admin
+            localStorage.setItem('admin_session', JSON.stringify({
+              firstName: fn,
+              lastName: ln,
+              email: email,
+              role: role
+            }));
             // Redirect to admin page for validation (will 404 until admin restored)
             window.location.href = '/admin/admin.html';
           } else {
@@ -934,6 +941,13 @@ https://templatemo.com/tm-574-mexant
           }
 
           alert('Login exitoso. Rol: ' + found.role);
+          // Save current user session
+          localStorage.setItem('admin_session', JSON.stringify({
+            firstName: found.firstName,
+            lastName: found.lastName,
+            email: found.email,
+            role: found.role
+          }));
           if (found.role === 'admin') {
             window.location.href = '/admin/admin.html';
           } else {
