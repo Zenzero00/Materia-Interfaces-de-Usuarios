@@ -258,9 +258,14 @@
                         </div>
 
                         <div class="typography-item">
-                            <h4>Importar Fuente (deshabilitado)</h4>
-                            <p>La importación de fuentes locales ha sido deshabilitada. Usa las listas desplegables de
-                                Fuente Principal y Secundaria para elegir fuentes disponibles.</p>
+                            <h4>Importar Fuente</h4>
+                            <p>Sube archivos .ttf para agregar fuentes personalizadas</p>
+                            <div class="font-upload-section">
+                                <input type="file" id="font-file-input" accept=".ttf,.otf,.woff,.woff2" hidden>
+                                <button class="btn-upload" id="btn-upload-font">
+                                    <i class="fas fa-upload"></i> Subir Fuente
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

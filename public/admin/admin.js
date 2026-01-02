@@ -1040,6 +1040,169 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (e) { console.warn('No se pudieron enlazar previews de color', e); }
     })();
 
+    // ---------- Custom Font Upload with IndexedDB ----------
+    const FONT_DB_NAME = 'CustomFontsDB';
+    const FONT_STORE_NAME = 'fonts';
+    let fontDB = null;
+
+    // Open or create IndexedDB database for custom fonts
+    function openFontDB() {
+        return new Promise((resolve, reject) => {
+            if (fontDB) { resolve(fontDB); return; }
+            const request = indexedDB.open(FONT_DB_NAME, 1);
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => { fontDB = request.result; resolve(fontDB); };
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(FONT_STORE_NAME)) {
+                    db.createObjectStore(FONT_STORE_NAME, { keyPath: 'name' });
+                }
+            };
+        });
+    }
+
+    // Save a custom font to IndexedDB
+    function saveCustomFont(name, blob) {
+        return openFontDB().then(db => {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(FONT_STORE_NAME, 'readwrite');
+                const store = tx.objectStore(FONT_STORE_NAME);
+                store.put({ name, blob, timestamp: Date.now() });
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        });
+    }
+
+    // Load all custom fonts from IndexedDB
+    function loadCustomFonts() {
+        return openFontDB().then(db => {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(FONT_STORE_NAME, 'readonly');
+                const store = tx.objectStore(FONT_STORE_NAME);
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result || []);
+            });
+        });
+    }
+
+    // Inject @font-face rule for a custom font into a document
+    function injectCustomFontFace(doc, fontName, blob) {
+        if (!doc || !fontName || !blob) return Promise.resolve();
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const dataUrl = e.target.result;
+                const styleId = 'custom-font-' + fontName.replace(/\s+/g, '-');
+                if (doc.getElementById(styleId)) { resolve(); return; }
+                const style = doc.createElement('style');
+                style.id = styleId;
+                style.textContent = `@font-face { font-family: '${fontName}'; src: url('${dataUrl}') format('truetype'); font-weight: normal; font-style: normal; }`;
+                doc.head.appendChild(style);
+                resolve();
+            };
+            reader.onerror = () => resolve();
+            reader.readAsDataURL(blob);
+        });
+    }
+
+    // Cache for loaded custom fonts
+    let customFontsCache = [];
+
+    // Load custom fonts and update selectors (no UI list)
+    function loadAndRefreshCustomFonts() {
+        loadCustomFonts().then(fonts => {
+            customFontsCache = fonts;
+            refreshFontSelectors();
+        }).catch(e => {
+            console.warn('Error cargando fuentes personalizadas:', e);
+        });
+    }
+
+    // Refresh font selectors to include custom fonts
+    function refreshFontSelectors() {
+        const primarySelect = document.getElementById('primary-font');
+        const secondarySelect = document.getElementById('secondary-font');
+        if (!primarySelect || !secondarySelect) return;
+
+        const baseFonts = ['Poppins', 'Roboto', 'Open Sans', 'Montserrat', 'Lato', 'Playfair Display', 'Arial', 'Helvetica', 'Times New Roman'];
+        const customNames = customFontsCache.map(f => f.name);
+
+        const currentPrimary = primarySelect.value;
+        const currentSecondary = secondarySelect.value;
+
+        // Helper to populate a select
+        const populate = (select, current) => {
+            select.innerHTML = '';
+            // Add custom fonts first (with prefix indicator)
+            customNames.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = 'custom:' + name;
+                opt.textContent = '⭐ ' + name;
+                if (current === 'custom:' + name) opt.selected = true;
+                select.appendChild(opt);
+            });
+            // Add separator if there are custom fonts
+            if (customNames.length > 0) {
+                const sep = document.createElement('option');
+                sep.disabled = true;
+                sep.textContent = '─────────────────';
+                select.appendChild(sep);
+            }
+            // Add base fonts
+            baseFonts.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                if (current === name) opt.selected = true;
+                select.appendChild(opt);
+            });
+        };
+
+        populate(primarySelect, currentPrimary);
+        populate(secondarySelect, currentSecondary);
+    }
+
+    // Handle font file upload
+    const fontFileInput = document.getElementById('font-file-input');
+    const btnUploadFont = document.getElementById('btn-upload-font');
+
+    if (btnUploadFont && fontFileInput) {
+        btnUploadFont.addEventListener('click', () => fontFileInput.click());
+
+        fontFileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            // Extract font name from filename (without extension)
+            let fontName = file.name.replace(/\.(ttf|otf|woff|woff2)$/i, '');
+            fontName = fontName.replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
+
+            // Capitalize first letter of each word
+            fontName = fontName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+
+            // Check if font already exists
+            if (customFontsCache.some(f => f.name.toLowerCase() === fontName.toLowerCase())) {
+                alert(`La fuente "${fontName}" ya existe.`);
+                this.value = '';
+                return;
+            }
+
+            // Save the font
+            saveCustomFont(fontName, file).then(() => {
+                loadAndRefreshCustomFonts();
+                alert(`Fuente "${fontName}" subida correctamente.`);
+            }).catch(e => {
+                console.error('Error guardando fuente:', e);
+                alert('Error al guardar la fuente.');
+            });
+
+            this.value = ''; // Reset file input
+        });
+    }
+
+    // Initialize custom fonts on page load
+    loadAndRefreshCustomFonts();
     // ---------- Typography preview and persistence (new) ----------
     const iframe = document.getElementById('site-preview');
     const primarySelect = document.getElementById('primary-font');
@@ -1152,13 +1315,32 @@ document.addEventListener('DOMContentLoaded', function () {
         tbody.innerHTML = '';
         hist.forEach((entry, idx) => {
             const tr = document.createElement('tr');
-            const idTd = document.createElement('td'); idTd.textContent = (idx + 1).toString(); tr.appendChild(idTd);
-            const pTd = document.createElement('td'); pTd.textContent = entry.primary || ''; tr.appendChild(pTd);
-            const sTd = document.createElement('td'); sTd.textContent = entry.secondary || ''; tr.appendChild(sTd);
+
+            // Style protected row
+            if (entry.isProtected) {
+                tr.style.background = 'linear-gradient(90deg, #e8f5e9 0%, #f1f8e9 100%)';
+            }
+
+            // ID with lock icon for protected
+            const idTd = document.createElement('td');
+            idTd.textContent = entry.isProtected ? '🔒 ' + (idx + 1) : (idx + 1).toString();
+            idTd.style.fontWeight = entry.isProtected ? 'bold' : 'normal';
+            tr.appendChild(idTd);
+
+            // Format font names (show star for custom fonts)
+            const formatFont = (f) => {
+                if (!f) return '';
+                if (f.startsWith('custom:')) return '⭐ ' + f.replace('custom:', '');
+                return f;
+            };
+
+            const pTd = document.createElement('td'); pTd.textContent = formatFont(entry.primary); tr.appendChild(pTd);
+            const sTd = document.createElement('td'); sTd.textContent = formatFont(entry.secondary); tr.appendChild(sTd);
             const tTd = document.createElement('td'); tTd.textContent = (entry.titleSize || '') + 'px'; tr.appendChild(tTd);
             const subTd = document.createElement('td'); subTd.textContent = (entry.subtitleSize || '') + 'px'; tr.appendChild(subTd);
             const parTd = document.createElement('td'); parTd.textContent = (entry.paragraphSize || '') + 'px'; tr.appendChild(parTd);
             const timeTd = document.createElement('td'); timeTd.textContent = entry.timestamp ? new Date(entry.timestamp).toLocaleString() : ''; tr.appendChild(timeTd);
+
             // attach context menu handler to row
             tr.addEventListener('contextmenu', function (ev) {
                 ev.preventDefault();
@@ -1202,14 +1384,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showContextMenu(x, y, index) {
         const menu = ensureContextMenu();
+        const hist = loadHistory();
+        const entry = hist[index];
+        const isProtected = entry && entry.isProtected;
+
         menu.style.left = x + 'px';
         menu.style.top = y + 'px';
         menu.style.display = 'block';
-        // wire actions
+
+        // wire actions and update styling for protected entries
         Array.from(menu.children).forEach(child => {
+            const action = child.dataset.action;
+
+            // Disable edit/delete for protected entries
+            if (isProtected && (action === 'editar' || action === 'eliminar')) {
+                child.style.color = '#aaa';
+                child.style.cursor = 'not-allowed';
+            } else {
+                child.style.color = '#333';
+                child.style.cursor = 'pointer';
+            }
+
             child.onclick = function (ev) {
-                const action = child.dataset.action;
-                handleContextAction(action, index);
+                handleTypographyContextAction(action, index);
                 menu.style.display = 'none';
             };
         });
@@ -1292,7 +1489,215 @@ document.addEventListener('DOMContentLoaded', function () {
         return confirmOverlay;
     }
 
+    // ---------- Typography Context Actions ----------
+    function handleTypographyContextAction(action, index) {
+        const hist = loadHistory();
+        const entry = hist[index];
+        if (!entry) return;
+
+        // Block edit and delete for protected entry (index 0 = ID 1)
+        if (entry.isProtected && (action === 'editar' || action === 'eliminar')) {
+            alert('Esta entrada es la original y no se puede ' + (action === 'editar' ? 'editar' : 'eliminar') + '.');
+            return;
+        }
+
+        if (action === 'editar') {
+            showTypographyEditModal(index, entry);
+        } else if (action === 'eliminar') {
+            showDeleteConfirmation(index);
+        } else if (action === 'aplicar') {
+            showTypographyApplyModal(index, entry);
+        }
+    }
+
+    // ---------- Typography Edit Modal ----------
+    let typoEditOverlay = null;
+    function showTypographyEditModal(index, entry) {
+        if (!typoEditOverlay) {
+            typoEditOverlay = document.createElement('div');
+            typoEditOverlay.className = 'admin-confirm-overlay';
+            typoEditOverlay.innerHTML = `
+                <div class="admin-confirm" role="dialog" aria-modal="true">
+                    <h3>Editar Tipografía</h3>
+                    <div style="margin: 16px 0;">
+                        <label style="display:block;margin-bottom:8px;font-weight:500;">Fuente Principal:</label>
+                        <select id="typo-edit-primary" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;"></select>
+                    </div>
+                    <div style="margin: 16px 0;">
+                        <label style="display:block;margin-bottom:8px;font-weight:500;">Fuente Secundaria:</label>
+                        <select id="typo-edit-secondary" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;"></select>
+                    </div>
+                    <div style="margin: 16px 0;">
+                        <label style="display:block;margin-bottom:8px;font-weight:500;">Tamaño Títulos (px):</label>
+                        <input type="number" id="typo-edit-title" min="12" max="100" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+                    </div>
+                    <div style="margin: 16px 0;">
+                        <label style="display:block;margin-bottom:8px;font-weight:500;">Tamaño Subtítulos (px):</label>
+                        <input type="number" id="typo-edit-subtitle" min="12" max="100" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+                    </div>
+                    <div style="margin: 16px 0;">
+                        <label style="display:block;margin-bottom:8px;font-weight:500;">Tamaño Párrafos (px):</label>
+                        <input type="number" id="typo-edit-paragraph" min="12" max="100" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;">
+                    </div>
+                    <div id="typo-edit-error" style="display:none;background:#ffe0e0;color:#c62828;padding:10px;border-radius:4px;margin-bottom:12px;font-size:14px;border:1px solid #ef9a9a;">
+                        ⚠️ Los tamaños deben estar entre 12px y 100px.
+                    </div>
+                    <div class="confirm-actions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+                        <button class="btn-cancel" style="background:#f0f0f0;color:#111;border:1px solid rgba(0,0,0,0.08);padding:8px 12px;border-radius:4px;cursor:pointer;">Cancelar</button>
+                        <button class="btn-confirm" style="background:#1b73e8;color:#fff;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;">Guardar</button>
+                    </div>
+                </div>`;
+            typoEditOverlay.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.36);z-index:10000;';
+            const dialog = typoEditOverlay.querySelector('.admin-confirm');
+            dialog.style.cssText = 'background:#fff;color:#111;padding:20px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,0.2);max-width:400px;width:90%;max-height:80vh;overflow-y:auto;';
+            document.body.appendChild(typoEditOverlay);
+
+            typoEditOverlay.querySelector('.btn-cancel').addEventListener('click', () => {
+                typoEditOverlay.style.display = 'none';
+            });
+        }
+
+        // Hide error message when opening modal
+        const errorDiv = document.getElementById('typo-edit-error');
+        if (errorDiv) errorDiv.style.display = 'none';
+
+        // Populate font selects
+        const baseFonts = ['Poppins', 'Roboto', 'Open Sans', 'Montserrat', 'Lato', 'Playfair Display', 'Arial', 'Helvetica', 'Times New Roman'];
+        const customNames = customFontsCache.map(f => 'custom:' + f.name);
+        const allFonts = [...customNames, ...baseFonts];
+
+        ['typo-edit-primary', 'typo-edit-secondary'].forEach(id => {
+            const sel = document.getElementById(id);
+            sel.innerHTML = '';
+            allFonts.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f;
+                opt.textContent = f.startsWith('custom:') ? '⭐ ' + f.replace('custom:', '') : f;
+                sel.appendChild(opt);
+            });
+        });
+
+        // Set current values
+        document.getElementById('typo-edit-primary').value = entry.primary || 'Poppins';
+        document.getElementById('typo-edit-secondary').value = entry.secondary || 'Poppins';
+        document.getElementById('typo-edit-title').value = entry.titleSize || 56;
+        document.getElementById('typo-edit-subtitle').value = entry.subtitleSize || 36;
+        document.getElementById('typo-edit-paragraph').value = entry.paragraphSize || 15;
+
+        // Set up confirm button
+        const confirmBtn = typoEditOverlay.querySelector('.btn-confirm');
+        confirmBtn.onclick = function () {
+            const errorDiv = document.getElementById('typo-edit-error');
+
+            // Validate pixel sizes (min 12, max 100)
+            const titleVal = parseInt(document.getElementById('typo-edit-title').value, 10);
+            const subtitleVal = parseInt(document.getElementById('typo-edit-subtitle').value, 10);
+            const paragraphVal = parseInt(document.getElementById('typo-edit-paragraph').value, 10);
+
+            const isInvalid = (val) => isNaN(val) || val < 12 || val > 100;
+
+            if (isInvalid(titleVal) || isInvalid(subtitleVal) || isInvalid(paragraphVal)) {
+                // Show red error note
+                if (errorDiv) errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Hide error if values are valid
+            if (errorDiv) errorDiv.style.display = 'none';
+
+            const hist = loadHistory();
+            hist[index] = {
+                ...hist[index],
+                primary: document.getElementById('typo-edit-primary').value,
+                secondary: document.getElementById('typo-edit-secondary').value,
+                titleSize: titleVal,
+                subtitleSize: subtitleVal,
+                paragraphSize: paragraphVal,
+                timestamp: Date.now()
+            };
+            saveHistory(hist);
+            renderHistory();
+            typoEditOverlay.style.display = 'none';
+        };
+
+        typoEditOverlay.style.display = 'flex';
+    }
+
+    // ---------- Typography Apply Modal ----------
+    let typoApplyOverlay = null;
+    function showTypographyApplyModal(index, entry) {
+        if (!typoApplyOverlay) {
+            typoApplyOverlay = document.createElement('div');
+            typoApplyOverlay.className = 'admin-confirm-overlay';
+            typoApplyOverlay.innerHTML = `
+                <div class="admin-confirm" role="dialog" aria-modal="true">
+                    <h3>Aplicar Tipografía</h3>
+                    <p>¿Deseas aplicar esta configuración de tipografía al sitio?</p>
+                    <div id="typo-apply-preview" style="margin:16px 0;padding:12px;background:#f8f9fa;border-radius:6px;"></div>
+                    <div class="confirm-actions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+                        <button class="btn-cancel" style="background:#f0f0f0;color:#111;border:1px solid rgba(0,0,0,0.08);padding:8px 12px;border-radius:4px;cursor:pointer;">Cancelar</button>
+                        <button class="btn-confirm" style="background:#34a853;color:#fff;border:none;padding:8px 12px;border-radius:4px;cursor:pointer;">Aplicar</button>
+                    </div>
+                </div>`;
+            typoApplyOverlay.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.36);z-index:10000;';
+            const dialog = typoApplyOverlay.querySelector('.admin-confirm');
+            dialog.style.cssText = 'background:#fff;color:#111;padding:20px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,0.2);max-width:400px;width:90%;';
+            document.body.appendChild(typoApplyOverlay);
+
+            typoApplyOverlay.querySelector('.btn-cancel').addEventListener('click', () => {
+                typoApplyOverlay.style.display = 'none';
+            });
+        }
+
+        // Show preview
+        const previewDiv = document.getElementById('typo-apply-preview');
+        const displayPrimary = entry.primary?.startsWith('custom:') ? '⭐ ' + entry.primary.replace('custom:', '') : entry.primary;
+        const displaySecondary = entry.secondary?.startsWith('custom:') ? '⭐ ' + entry.secondary.replace('custom:', '') : entry.secondary;
+        previewDiv.innerHTML = `
+            <div style="margin-bottom:8px;"><strong>Fuente Principal:</strong> ${displayPrimary || 'Poppins'}</div>
+            <div style="margin-bottom:8px;"><strong>Fuente Secundaria:</strong> ${displaySecondary || 'Poppins'}</div>
+            <div style="margin-bottom:8px;"><strong>Tamaño Títulos:</strong> ${entry.titleSize || 56}px</div>
+            <div style="margin-bottom:8px;"><strong>Tamaño Subtítulos:</strong> ${entry.subtitleSize || 36}px</div>
+            <div><strong>Tamaño Párrafos:</strong> ${entry.paragraphSize || 15}px</div>
+        `;
+
+        // Set up confirm button
+        const confirmBtn = typoApplyOverlay.querySelector('.btn-confirm');
+        confirmBtn.onclick = function () {
+            // Apply to controls
+            if (primarySelect) primarySelect.value = entry.primary || 'Poppins';
+            if (secondarySelect) secondarySelect.value = entry.secondary || 'Poppins';
+            if (titleSlider) titleSlider.value = entry.titleSize || 56;
+            if (subtitleSlider) subtitleSlider.value = entry.subtitleSize || 36;
+            if (paragraphSlider) paragraphSlider.value = entry.paragraphSize || 15;
+
+            // Apply to iframe and preview
+            const settings = {
+                primary: entry.primary,
+                secondary: entry.secondary,
+                titleSize: entry.titleSize,
+                subtitleSize: entry.subtitleSize,
+                paragraphSize: entry.paragraphSize
+            };
+            applyTypographyToIframe(settings);
+            updateAdminPreview(settings);
+            saveTypographySettings(settings);
+
+            typoApplyOverlay.style.display = 'none';
+            alert('Tipografía aplicada correctamente.');
+        };
+
+        typoApplyOverlay.style.display = 'flex';
+    }
+
     function showDeleteConfirmation(index) {
+        const hist = loadHistory();
+        const entry = hist[index];
+        // Block delete for protected entry
+        if (entry && entry.isProtected) {
+            alert('Esta entrada es la original y no se puede eliminar.');
+            return;
+        }
         const modal = ensureConfirmModal();
         modal.dataset.deleteIndex = index;
         modal.style.display = 'flex';
@@ -1321,9 +1726,10 @@ document.addEventListener('DOMContentLoaded', function () {
     })();
 
     // Ensure history has a default entry if empty (preserve existing history)
+    // Mark first entry as protected (original settings)
     (function ensureInitialHistory() {
         try {
-            const hist = loadHistory();
+            let hist = loadHistory();
             if (!hist || hist.length === 0) {
                 const defaultEntry = {
                     primary: 'Poppins',
@@ -1331,9 +1737,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     titleSize: 56,
                     subtitleSize: 36,
                     paragraphSize: 15,
-                    timestamp: '' // leave date/time blank per request
+                    timestamp: '', // leave date/time blank per request
+                    isProtected: true // Mark as protected (original)
                 };
                 saveHistory([defaultEntry]);
+            } else {
+                // Ensure first entry is marked as protected
+                if (!hist[0].isProtected) {
+                    hist[0].isProtected = true;
+                    saveHistory(hist);
+                }
             }
         } catch (e) { console.warn('No se pudo inicializar historial', e); }
         renderHistory();
@@ -1380,29 +1793,75 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Live change handlers
     // Helper: apply only primary font (titles) to iframe and preview
-    function applyPrimaryFontOnly(font) {
-        if (!font) return;
-        // inject into iframe
-        const doc = safeGetIframeDoc();
-        if (doc) injectGoogleFontInDoc(doc, font);
-        // apply to iframe titles (h2)
-        try { if (doc) doc.querySelectorAll('h2').forEach(h => h.style.fontFamily = font + ', sans-serif'); } catch (e) { }
-        // apply to admin preview titles
-        try { if (previewBox) previewBox.querySelectorAll('h2').forEach(h => h.style.fontFamily = font + ', sans-serif'); } catch (e) { }
+    function applyPrimaryFontOnly(fontValue) {
+        if (!fontValue) return;
+
+        // Check if it's a custom font
+        if (fontValue.startsWith('custom:')) {
+            const fontName = fontValue.replace('custom:', '');
+            // Find font in cache
+            const fontData = customFontsCache.find(f => f.name === fontName);
+            if (fontData && fontData.blob) {
+                const doc = safeGetIframeDoc();
+                // Inject custom font-face into iframe
+                if (doc) {
+                    injectCustomFontFace(doc, fontName, fontData.blob).then(() => {
+                        doc.querySelectorAll('h2').forEach(h => h.style.fontFamily = `'${fontName}', sans-serif`);
+                    });
+                }
+                // Inject into admin document and preview
+                injectCustomFontFace(document, fontName, fontData.blob).then(() => {
+                    if (previewBox) previewBox.querySelectorAll('h2').forEach(h => h.style.fontFamily = `'${fontName}', sans-serif`);
+                });
+            }
+        } else {
+            // Regular Google font
+            const doc = safeGetIframeDoc();
+            if (doc) injectGoogleFontInDoc(doc, fontValue);
+            try { if (doc) doc.querySelectorAll('h2').forEach(h => h.style.fontFamily = fontValue + ', sans-serif'); } catch (e) { }
+            try { if (previewBox) previewBox.querySelectorAll('h2').forEach(h => h.style.fontFamily = fontValue + ', sans-serif'); } catch (e) { }
+        }
     }
 
     // Helper: apply only secondary font (body, subtitles, paragraphs) to iframe and preview
-    function applySecondaryFontOnly(font) {
-        if (!font) return;
-        const doc = safeGetIframeDoc();
-        if (doc) injectGoogleFontInDoc(doc, font);
-        try { if (doc) doc.body.style.fontFamily = font + ', sans-serif'; } catch (e) { }
-        try { if (doc) doc.querySelectorAll('h4').forEach(h => h.style.fontFamily = font + ', sans-serif'); } catch (e) { }
-        try { if (doc) doc.querySelectorAll('p').forEach(p => p.style.fontFamily = font + ', sans-serif'); } catch (e) { }
-        // admin preview
-        try { if (previewBox) previewBox.style.fontFamily = font + ', sans-serif'; } catch (e) { }
-        try { if (previewBox) previewBox.querySelectorAll('h4').forEach(h => h.style.fontFamily = font + ', sans-serif'); } catch (e) { }
-        try { if (previewBox) previewBox.querySelectorAll('p').forEach(p => p.style.fontFamily = font + ', sans-serif'); } catch (e) { }
+    function applySecondaryFontOnly(fontValue) {
+        if (!fontValue) return;
+
+        // Check if it's a custom font
+        if (fontValue.startsWith('custom:')) {
+            const fontName = fontValue.replace('custom:', '');
+            const fontData = customFontsCache.find(f => f.name === fontName);
+            if (fontData && fontData.blob) {
+                const doc = safeGetIframeDoc();
+                // Inject custom font-face into iframe
+                if (doc) {
+                    injectCustomFontFace(doc, fontName, fontData.blob).then(() => {
+                        doc.body.style.fontFamily = `'${fontName}', sans-serif`;
+                        doc.querySelectorAll('h4').forEach(h => h.style.fontFamily = `'${fontName}', sans-serif`);
+                        doc.querySelectorAll('p').forEach(p => p.style.fontFamily = `'${fontName}', sans-serif`);
+                    });
+                }
+                // Inject into admin document and preview
+                injectCustomFontFace(document, fontName, fontData.blob).then(() => {
+                    if (previewBox) {
+                        previewBox.style.fontFamily = `'${fontName}', sans-serif`;
+                        previewBox.querySelectorAll('h4').forEach(h => h.style.fontFamily = `'${fontName}', sans-serif`);
+                        previewBox.querySelectorAll('p').forEach(p => p.style.fontFamily = `'${fontName}', sans-serif`);
+                    }
+                });
+            }
+        } else {
+            // Regular Google font
+            const doc = safeGetIframeDoc();
+            if (doc) injectGoogleFontInDoc(doc, fontValue);
+            try { if (doc) doc.body.style.fontFamily = fontValue + ', sans-serif'; } catch (e) { }
+            try { if (doc) doc.querySelectorAll('h4').forEach(h => h.style.fontFamily = fontValue + ', sans-serif'); } catch (e) { }
+            try { if (doc) doc.querySelectorAll('p').forEach(p => p.style.fontFamily = fontValue + ', sans-serif'); } catch (e) { }
+            // admin preview
+            try { if (previewBox) previewBox.style.fontFamily = fontValue + ', sans-serif'; } catch (e) { }
+            try { if (previewBox) previewBox.querySelectorAll('h4').forEach(h => h.style.fontFamily = fontValue + ', sans-serif'); } catch (e) { }
+            try { if (previewBox) previewBox.querySelectorAll('p').forEach(p => p.style.fontFamily = fontValue + ', sans-serif'); } catch (e) { }
+        }
     }
 
     if (primarySelect) primarySelect.addEventListener('change', (ev) => {

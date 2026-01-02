@@ -661,28 +661,132 @@ https://templatemo.com/tm-574-mexant
     var swiper = new Swiper(".swiper-container", swiperOptions);
   </script>
   <script>
-    // Apply saved admin typography settings (localStorage-only). Font import from local
-    // files/IndexedDB has been disabled. This script injects Google Fonts for the named
-    // families stored in localStorage and applies sizes/families to h2/h4/p.
+    // Apply saved admin typography settings with support for custom fonts from IndexedDB
     (function () {
+      var FONT_DB_NAME = 'CustomFontsDB';
+      var FONT_STORE_NAME = 'fonts';
+
+      // Open IndexedDB for custom fonts
+      function openFontDB() {
+        return new Promise(function (resolve, reject) {
+          var request = indexedDB.open(FONT_DB_NAME, 1);
+          request.onerror = function () { reject(request.error); };
+          request.onsuccess = function () { resolve(request.result); };
+          request.onupgradeneeded = function (e) {
+            var db = e.target.result;
+            if (!db.objectStoreNames.contains(FONT_STORE_NAME)) {
+              db.createObjectStore(FONT_STORE_NAME, { keyPath: 'name' });
+            }
+          };
+        });
+      }
+
+      // Load a specific custom font from IndexedDB
+      function loadCustomFont(name) {
+        return openFontDB().then(function (db) {
+          return new Promise(function (resolve, reject) {
+            var tx = db.transaction(FONT_STORE_NAME, 'readonly');
+            var store = tx.objectStore(FONT_STORE_NAME);
+            var request = store.get(name);
+            request.onsuccess = function () { resolve(request.result); };
+            request.onerror = function () { reject(request.error); };
+          });
+        });
+      }
+
+      // Inject @font-face for custom font
+      function injectCustomFontFace(fontName, blob) {
+        return new Promise(function (resolve) {
+          var reader = new FileReader();
+          reader.onload = function (e) {
+            var dataUrl = e.target.result;
+            var styleId = 'custom-font-' + fontName.replace(/\s+/g, '-');
+            if (document.getElementById(styleId)) { resolve(); return; }
+            var style = document.createElement('style');
+            style.id = styleId;
+            style.textContent = "@font-face { font-family: '" + fontName + "'; src: url('" + dataUrl + "') format('truetype'); font-weight: normal; font-style: normal; }";
+            document.head.appendChild(style);
+            resolve();
+          };
+          reader.onerror = function () { resolve(); };
+          reader.readAsDataURL(blob);
+        });
+      }
+
+      // Inject Google Font link
+      function injectGoogleFont(font) {
+        if (!font || font.startsWith('custom:')) return;
+        var id = 'gf-' + font.replace(/\s+/g, '-');
+        if (document.getElementById(id)) return;
+        var link = document.createElement('link');
+        link.id = id;
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=' + encodeURIComponent(font) + ':wght@300;400;500;600;700&display=swap';
+        document.head.appendChild(link);
+      }
+
+      // Apply font to elements
+      function applyFontToElements(selector, fontFamily) {
+        document.querySelectorAll(selector).forEach(function (el) {
+          el.style.fontFamily = fontFamily;
+        });
+      }
+
       function applySavedTypography() {
         try {
           var raw = localStorage.getItem('admin_typography_settings');
           if (!raw) return;
           var s = JSON.parse(raw);
-          function inject(font) { if (!font) return; var id = 'gf-' + font.replace(/\s+/g, '-'); if (document.getElementById(id)) return; var link = document.createElement('link'); link.id = id; link.rel = 'stylesheet'; link.href = 'https://fonts.googleapis.com/css2?family=' + encodeURIComponent(font) + ':wght@300;400;500;600;700&display=swap'; document.head.appendChild(link); }
-          inject(s.primary); inject(s.secondary);
 
-          // primary -> h2, secondary -> h4 & p + body
-          if (s.primary) { document.querySelectorAll('h2').forEach(function (h) { h.style.fontFamily = s.primary + ', sans-serif'; }); }
-          if (s.secondary) { document.querySelectorAll('h4').forEach(function (h) { h.style.fontFamily = s.secondary + ', sans-serif'; }); document.querySelectorAll('p').forEach(function (p) { p.style.fontFamily = s.secondary + ', sans-serif'; }); document.body.style.fontFamily = s.secondary + ', sans-serif'; }
+          var primaryFont = s.primary || '';
+          var secondaryFont = s.secondary || '';
 
+          // Process primary font (for h2)
+          var primaryPromise = Promise.resolve();
+          if (primaryFont.startsWith('custom:')) {
+            var primaryName = primaryFont.replace('custom:', '');
+            primaryPromise = loadCustomFont(primaryName).then(function (fontData) {
+              if (fontData && fontData.blob) {
+                return injectCustomFontFace(primaryName, fontData.blob).then(function () {
+                  applyFontToElements('h2', "'" + primaryName + "', sans-serif");
+                });
+              }
+            }).catch(function (e) { console.warn('Error cargando fuente primaria:', e); });
+          } else if (primaryFont) {
+            injectGoogleFont(primaryFont);
+            applyFontToElements('h2', primaryFont + ', sans-serif');
+          }
+
+          // Process secondary font (for h4, p, body)
+          var secondaryPromise = Promise.resolve();
+          if (secondaryFont.startsWith('custom:')) {
+            var secondaryName = secondaryFont.replace('custom:', '');
+            secondaryPromise = loadCustomFont(secondaryName).then(function (fontData) {
+              if (fontData && fontData.blob) {
+                return injectCustomFontFace(secondaryName, fontData.blob).then(function () {
+                  var fontFamily = "'" + secondaryName + "', sans-serif";
+                  document.body.style.fontFamily = fontFamily;
+                  applyFontToElements('h4', fontFamily);
+                  applyFontToElements('p', fontFamily);
+                });
+              }
+            }).catch(function (e) { console.warn('Error cargando fuente secundaria:', e); });
+          } else if (secondaryFont) {
+            injectGoogleFont(secondaryFont);
+            document.body.style.fontFamily = secondaryFont + ', sans-serif';
+            applyFontToElements('h4', secondaryFont + ', sans-serif');
+            applyFontToElements('p', secondaryFont + ', sans-serif');
+          }
+
+          // Apply sizes
           var titleSize = (typeof s.titleSize !== 'undefined') ? s.titleSize : 56;
           var subtitleSize = (typeof s.subtitleSize !== 'undefined') ? s.subtitleSize : 36;
           var paragraphSize = (typeof s.paragraphSize !== 'undefined') ? s.paragraphSize : 15;
+
           document.querySelectorAll('h2').forEach(function (h) { h.style.fontSize = titleSize + 'px'; });
           document.querySelectorAll('h4').forEach(function (h) { h.style.fontSize = subtitleSize + 'px'; });
           document.querySelectorAll('p').forEach(function (p) { p.style.fontSize = paragraphSize + 'px'; });
+
         } catch (e) { console.warn('No se pudo aplicar tipografía guardada:', e); }
       }
 
@@ -691,7 +795,7 @@ https://templatemo.com/tm-574-mexant
       // Listen for settings-applied messages from admin and reapply
       try {
         if (window.BroadcastChannel) {
-          const bcIdx = new BroadcastChannel('admin-typography');
+          var bcIdx = new BroadcastChannel('admin-typography');
           bcIdx.addEventListener('message', function (ev) {
             try {
               var d = ev.data || {};

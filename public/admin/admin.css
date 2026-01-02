@@ -690,6 +690,112 @@ body {
     margin-top: auto;
 }
 
+/* Font Upload Section */
+.font-upload-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: auto;
+}
+
+.btn-upload {
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+}
+
+.btn-upload:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(108, 92, 231, 0.4);
+}
+
+.btn-upload:active {
+    transform: translateY(0);
+}
+
+.btn-upload i {
+    font-size: 1rem;
+}
+
+.custom-fonts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 120px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.custom-fonts-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.custom-fonts-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.custom-fonts-list::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 3px;
+}
+
+.custom-font-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.custom-font-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.custom-font-item .font-name {
+    font-weight: 500;
+    color: var(--dark-color);
+    font-size: 0.9rem;
+}
+
+.custom-font-item .btn-delete-font {
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.custom-font-item .btn-delete-font:hover {
+    color: var(--danger-color);
+    background: rgba(234, 67, 53, 0.1);
+}
+
+.no-custom-fonts {
+    color: var(--gray-color);
+    font-size: 0.85rem;
+    font-style: italic;
+    text-align: center;
+    padding: 8px;
+}
+
 .size-control {
     display: flex;
     align-items: center;
