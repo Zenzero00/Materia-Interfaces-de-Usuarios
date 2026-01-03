@@ -20,6 +20,19 @@
 </head>
 
 <body id="top">
+    <!-- Session protection - redirect if no valid admin session -->
+    <script>
+        (function () {
+            try {
+                var session = JSON.parse(localStorage.getItem('admin_session') || '{}');
+                if (!session.email || session.role !== 'admin') {
+                    window.location.href = '../index.html';
+                }
+            } catch (e) {
+                window.location.href = '../index.html';
+            }
+        })();
+    </script>
     <div class="admin-container">
         <!-- Sidebar -->
         <div class="sidebar">

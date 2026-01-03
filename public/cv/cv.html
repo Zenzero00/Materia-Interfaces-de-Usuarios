@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CV - Plantilla clásica (pixel-perfect)</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Quill -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="cv.css">
+</head>
+
+<body>
+  <!-- Session protection - redirect if no valid user session -->
+  <script>
+    (function () {
+      try {
+        var session = JSON.parse(localStorage.getItem('user_session') || '{}');
+        if (!session.email) {
+          window.location.href = '../index.html';
+        }
+      } catch (e) {
+        window.location.href = '../index.html';
+      }
+    })();
+  </script>
+
+  <!-- Navigation header -->
+  <nav class="cv-nav">
+    <div class="cv-nav-left">
+      <a href="../index.html" class="cv-nav-brand">
+        <i class="fas fa-home"></i> Inicio
+      </a>
+    </div>
+    <div class="cv-nav-right">
+      <span id="cv-user-name" class="cv-user-name">Usuario</span>
+      <a href="../index.html" onclick="localStorage.removeItem('user_session'); return true;" class="cv-logout-btn">
+        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+      </a>
+    </div>
+  </nav>
+
+  <header class="cv-title-wrap">
+    <h1 class="cv-title">Curriculum vitae</h1>
+  </header>
+
+  <main class="container my-4">
+    <div class="row gx-4">
+
+      <!-- LEFT: form -->
+      <aside class="col-lg-5">
+        <div class="card p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">Datos personales</h5>
+            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+              data-bs-target="#panel-personal">Ocultar/Mostrar</button>
+          </div>
+
+          <div id="panel-personal" class="collapse show">
+            <div class="d-flex gap-3 mb-3 align-items-start">
+              <div id="photoBox" class="photo-box" role="button" tabindex="0" aria-label="Subir foto">
+                <img id="photoPreview" alt="Foto">
+                <div class="photo-placeholder">Click o arrastra<br><small>Subir foto</small></div>
+              </div>
+
+              <div class="flex-fill">
+                <input id="nombre" class="form-control mb-2" placeholder="Nombre">
+                <input id="apellidos" class="form-control mb-2" placeholder="Apellidos">
+                <input id="correo" class="form-control mb-2" placeholder="Correo electrónico">
+                <input id="telefono" class="form-control mb-2" placeholder="Teléfono">
+                <input id="direccion" class="form-control mb-2" placeholder="Dirección">
+                <input id="codigoPostal" class="form-control mb-2" placeholder="Código postal">
+                <input id="localidad" class="form-control mb-2" placeholder="Localidad">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Perfil -->
+        <div class="card p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">Perfil</h5>
+            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+              data-bs-target="#panel-perfil">Ocultar/Mostrar</button>
+          </div>
+          <div id="panel-perfil" class="collapse show">
+            <div id="perfilEditor" class="wysiwyg"></div>
+          </div>
+        </div>
+
+        <!-- Formación -->
+        <div class="card p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">Formación</h5>
+            <div>
+              <button class="btn btn-sm btn-success me-2 add-btn" data-target="formacion">+ Añadir</button>
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                data-bs-target="#panel-formacion">Ocultar/Mostrar</button>
+            </div>
+          </div>
+          <div id="panel-formacion" class="collapse show">
+            <div id="formacion"></div>
+          </div>
+        </div>
+
+        <!-- Experiencia -->
+        <div class="card p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">Experiencia</h5>
+            <div>
+              <button class="btn btn-sm btn-success me-2 add-btn" data-target="experiencia">+ Añadir</button>
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                data-bs-target="#panel-experiencia">Ocultar/Mostrar</button>
+            </div>
+          </div>
+          <div id="panel-experiencia" class="collapse show">
+            <div id="experiencia"></div>
+          </div>
+        </div>
+
+        <!-- Idiomas -->
+        <div class="card p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">Idiomas</h5>
+            <div>
+              <button class="btn btn-sm btn-success me-2 add-btn" data-target="idiomas">+ Añadir</button>
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                data-bs-target="#panel-idiomas">Ocultar/Mostrar</button>
+            </div>
+          </div>
+          <div id="panel-idiomas" class="collapse show">
+            <div id="idiomas"></div>
+          </div>
+        </div>
+
+        <!-- Habilidades -->
+        <div class="card p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">Habilidades</h5>
+            <div>
+              <button class="btn btn-sm btn-success me-2 add-btn" data-target="habilidades">+ Añadir</button>
+              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                data-bs-target="#panel-habilidades">Ocultar/Mostrar</button>
+            </div>
+          </div>
+          <div id="panel-habilidades" class="collapse show">
+            <div id="habilidades"></div>
+          </div>
+        </div>
+
+        <!-- Colors & actions -->
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex gap-2">
+            <button class="color-swatch" data-color="#c62828" style="background:#c62828" title="Rojo"></button>
+            <button class="color-swatch" data-color="#1565c0" style="background:#1565c0" title="Azul"></button>
+            <button class="color-swatch" data-color="#2e7d32" style="background:#2e7d32" title="Verde"></button>
+            <button class="color-swatch" data-color="#6a1b9a" style="background:#6a1b9a" title="Morado"></button>
+            <button class="color-swatch" data-color="#ff8f00" style="background:#ff8f00" title="Naranja"></button>
+          </div>
+          <div>
+            <button id="download" class="btn btn-primary">Descargar (PDF)</button>
+          </div>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT: preview (the classic CV layout) -->
+      <section class="col-lg-7">
+        <div id="cvClassic" class="cv-classic card p-4">
+          <!-- Datos personales box -->
+          <div class="data-box mb-3">
+            <div class="data-header classic-accent">Datos personales</div>
+            <div class="data-body d-flex align-items-start gap-3">
+              <div class="data-left flex-fill">
+                <div class="row mb-1">
+                  <div class="col-4 label">Nombre</div>
+                  <div id="pNombre" class="col-8 value"></div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-4 label">Apellidos</div>
+                  <div id="pApellidos" class="col-8 value"></div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-4 label">Correo</div>
+                  <div id="pCorreo" class="col-8 value"></div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-4 label">Teléfono</div>
+                  <div id="pTelefono" class="col-8 value"></div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-4 label">Dirección</div>
+                  <div id="pDireccion" class="col-8 value"></div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-4 label">Código postal</div>
+                  <div id="pCodigo" class="col-8 value"></div>
+                </div>
+                <div class="row mb-1">
+                  <div class="col-4 label">Localidad</div>
+                  <div id="pLocalidad" class="col-8 value"></div>
+                </div>
+              </div>
+              <div class="data-right">
+                <div class="cv-photo-wrap"><img id="cvPhotoClassic" alt=""></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PERFIL: ahora con mismo recuadro -->
+          <div class="data-box mb-3">
+            <div class="data-header classic-accent">Perfil</div>
+            <div class="data-body">
+              <div id="cvPerfilClassic" class="section-content"></div>
+            </div>
+          </div>
+
+          <!-- FORMACIÓN: mismo recuadro -->
+          <div class="data-box mb-3">
+            <div class="data-header classic-accent">Formación</div>
+            <div class="data-body">
+              <div id="cvFormacionClassic" class="section-content"></div>
+            </div>
+          </div>
+
+          <!-- EXPERIENCIA: mismo recuadro -->
+          <div class="data-box mb-3">
+            <div class="data-header classic-accent">Experiencia</div>
+            <div class="data-body">
+              <div id="cvExperienciaClassic" class="section-content"></div>
+            </div>
+          </div>
+
+          <!-- COMPETENCIAS: mismo recuadro -->
+          <div class="data-box mb-3">
+            <div class="data-header classic-accent">Competencias</div>
+            <div class="data-body">
+              <div id="cvHabilidadesClassic" class="section-content"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Photo modal -->
+  <div class="modal fade" id="photoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Subir foto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="dropZone" class="drop-zone text-center p-4">
+            <div class="icon mb-2">📷</div>
+            <div class="text mb-2">Arrastra tu imagen aquí o haz click para seleccionar</div>
+            <input id="modalFile" type="file" accept="image/*" class="d-none">
+            <button id="chooseFile" class="btn btn-outline-primary">Elegir imagen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- libs -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+
+  <!-- logic -->
+  <script src="cv.js"></script>
+</body>
+
+</html>

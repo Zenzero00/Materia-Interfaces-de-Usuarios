@@ -414,6 +414,12 @@ https://templatemo.com/tm-574-mexant
                     <option value="admin">Admin</option>
                   </select>
                 </div>
+                <!-- Error message display -->
+                <div id="registerError" class="col-12" style="display:none;">
+                  <div class="alert alert-danger py-2 mb-0" style="font-size:14px;">
+                    <i class="fas fa-exclamation-circle me-2"></i><span id="registerErrorText"></span>
+                  </div>
+                </div>
                 <div class="col-12 mt-4">
                   <button type="submit" class="btn btn-primary w-100 py-3 fw-bold"
                     style="background-color: var(--secondary-color); border: none;">Registrarse</button>
@@ -444,12 +450,11 @@ https://templatemo.com/tm-574-mexant
                   <input type="password" class="form-control form-control-lg" id="loginPassword" name="loginPassword"
                     required>
                 </div>
-                <div class="col-12">
-                  <label for="loginRole" class="form-label fw-bold">Tipo de Usuario</label>
-                  <select id="loginRole" name="loginRole" class="form-select form-select-lg">
-                    <option value="normal" selected>Normal</option>
-                    <option value="admin">Admin</option>
-                  </select>
+                <!-- Error message display -->
+                <div id="loginError" class="col-12" style="display:none;">
+                  <div class="alert alert-danger py-2 mb-0" style="font-size:14px;">
+                    <i class="fas fa-exclamation-circle me-2"></i><span id="loginErrorText"></span>
+                  </div>
                 </div>
                 <div class="col-12 mt-4">
                   <button type="submit" class="btn btn-success w-100 py-3 fw-bold"
@@ -847,6 +852,32 @@ https://templatemo.com/tm-574-mexant
         }
       }
 
+      // Helper to show/hide form error messages
+      function showRegisterError(message) {
+        var errorDiv = document.getElementById('registerError');
+        var errorText = document.getElementById('registerErrorText');
+        if (errorDiv && errorText) {
+          errorText.textContent = message;
+          errorDiv.style.display = 'block';
+        }
+      }
+      function hideRegisterError() {
+        var errorDiv = document.getElementById('registerError');
+        if (errorDiv) errorDiv.style.display = 'none';
+      }
+      function showLoginError(message) {
+        var errorDiv = document.getElementById('loginError');
+        var errorText = document.getElementById('loginErrorText');
+        if (errorDiv && errorText) {
+          errorText.textContent = message;
+          errorDiv.style.display = 'block';
+        }
+      }
+      function hideLoginError() {
+        var errorDiv = document.getElementById('loginError');
+        if (errorDiv) errorDiv.style.display = 'none';
+      }
+
       // Create account handler
       var createForm = document.getElementById('create-account');
       if (createForm) {
@@ -868,18 +899,21 @@ https://templatemo.com/tm-574-mexant
             setEmailFeedback('registerEmail', true);
           }
 
+          // Hide previous errors
+          hideRegisterError();
+
           if (!fn || !ln || !email || !pw || !cpw) {
-            alert('Por favor completa todos los campos.');
+            showRegisterError('Por favor completa todos los campos.');
             return;
           }
           if (pw !== cpw) {
-            alert('Las contraseñas no coinciden.');
+            showRegisterError('Las contraseñas no coinciden.');
             return;
           }
 
           var users = getUsers();
           if (users.some(function (u) { return u.email === email; })) {
-            alert('Ya existe un usuario con ese correo.');
+            showRegisterError('Ya existe un usuario con ese correo.');
             return;
           }
 
@@ -893,7 +927,7 @@ https://templatemo.com/tm-574-mexant
           };
           users.push(user);
           saveUsers(users);
-          alert('Usuario creado correctamente.');
+          // Success - redirect immediately without alert
 
           if (role === 'admin') {
             // Save current user session for admin
@@ -903,10 +937,18 @@ https://templatemo.com/tm-574-mexant
               email: email,
               role: role
             }));
-            // Redirect to admin page for validation (will 404 until admin restored)
+            // Redirect to admin page
             window.location.href = '/admin/admin.html';
           } else {
-            createForm.reset();
+            // Save current user session for normal user
+            localStorage.setItem('user_session', JSON.stringify({
+              firstName: fn,
+              lastName: ln,
+              email: email,
+              role: role
+            }));
+            // Redirect normal users to CV page
+            window.location.href = '/cv/cv.html';
           }
         });
       }
@@ -928,20 +970,22 @@ https://templatemo.com/tm-574-mexant
             setEmailFeedback('loginEmail', true);
           }
 
+          // Hide previous errors
+          hideLoginError();
+
           if (!email || !pw) {
-            alert('Por favor introduce correo y contraseña.');
+            showLoginError('Por favor introduce correo y contraseña.');
             return;
           }
 
           var users = getUsers();
           var found = users.find(function (u) { return u.email === email && u.password === pw; });
           if (!found) {
-            alert('Usuario o contraseña inválidos.');
+            showLoginError('Usuario o contraseña inválidos.');
             return;
           }
 
-          alert('Login exitoso. Rol: ' + found.role);
-          // Save current user session
+          // Success - save session and redirect
           localStorage.setItem('admin_session', JSON.stringify({
             firstName: found.firstName,
             lastName: found.lastName,
@@ -951,7 +995,15 @@ https://templatemo.com/tm-574-mexant
           if (found.role === 'admin') {
             window.location.href = '/admin/admin.html';
           } else {
-            loginForm.reset();
+            // Save session for normal user
+            localStorage.setItem('user_session', JSON.stringify({
+              firstName: found.firstName,
+              lastName: found.lastName,
+              email: found.email,
+              role: found.role
+            }));
+            // Redirect normal users to CV page
+            window.location.href = '/cv/cv.html';
           }
         });
       }
