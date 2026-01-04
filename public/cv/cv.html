@@ -4,21 +4,27 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CV - Plantilla clásica (pixel-perfect)</title>
+  <title>Generador de CV</title>
 
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Quill -->
-  <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Quill WYSIWYG Editor -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+  <!-- Cropper.js for Image Cropping -->
+  <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.css" rel="stylesheet">
+  <!-- intl-tel-input for Phone Number -->
+  <link href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.5.3/build/css/intlTelInput.css" rel="stylesheet">
 
   <!-- Custom styles -->
   <link rel="stylesheet" href="cv.css">
 </head>
 
 <body>
-  <!-- Session protection - redirect if no valid user session -->
+  <!-- Session protection -->
   <script>
     (function () {
       try {
@@ -47,235 +53,363 @@
     </div>
   </nav>
 
-  <header class="cv-title-wrap">
-    <h1 class="cv-title">Curriculum vitae</h1>
-  </header>
+  <div class="cv-container">
+    <!-- Left Column: Form + Saved CVs -->
+    <div class="cv-left-column">
+      <!-- Left Panel: Form -->
+      <aside class="cv-form-panel">
+        <h2 class="form-title"><i class="fas fa-file-alt me-2"></i>Generador de CV</h2>
 
-  <main class="container my-4">
-    <div class="row gx-4">
-
-      <!-- LEFT: form -->
-      <aside class="col-lg-5">
-        <div class="card p-3 mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="mb-0">Datos personales</h5>
-            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-              data-bs-target="#panel-personal">Ocultar/Mostrar</button>
+        <!-- Datos Personales -->
+        <div class="form-section">
+          <div class="section-header" data-bs-toggle="collapse" data-bs-target="#section-personal">
+            <h5><i class="fas fa-user me-2"></i>Datos Personales</h5>
+            <i class="fas fa-chevron-down"></i>
           </div>
-
-          <div id="panel-personal" class="collapse show">
-            <div class="d-flex gap-3 mb-3 align-items-start">
-              <div id="photoBox" class="photo-box" role="button" tabindex="0" aria-label="Subir foto">
-                <img id="photoPreview" alt="Foto">
-                <div class="photo-placeholder">Click o arrastra<br><small>Subir foto</small></div>
+          <div id="section-personal" class="collapse show section-content">
+            <div class="photo-upload-area">
+              <div id="photoBox" class="photo-box" role="button" tabindex="0">
+                <img id="photoPreview" alt="Foto" style="display:none;">
+                <div class="photo-placeholder">
+                  <i class="fas fa-camera"></i>
+                  <span>Subir Foto</span>
+                </div>
               </div>
-
-              <div class="flex-fill">
-                <input id="nombre" class="form-control mb-2" placeholder="Nombre">
-                <input id="apellidos" class="form-control mb-2" placeholder="Apellidos">
-                <input id="correo" class="form-control mb-2" placeholder="Correo electrónico">
-                <input id="telefono" class="form-control mb-2" placeholder="Teléfono">
-                <input id="direccion" class="form-control mb-2" placeholder="Dirección">
-                <input id="codigoPostal" class="form-control mb-2" placeholder="Código postal">
-                <input id="localidad" class="form-control mb-2" placeholder="Localidad">
+              <input type="file" id="photoInput" accept="image/*" style="display:none;">
+            </div>
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="nombre" placeholder="Juan">
+              </div>
+              <div class="col-6">
+                <label class="form-label">Apellidos</label>
+                <input type="text" class="form-control" id="apellidos" placeholder="Pérez García">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Título Profesional</label>
+                <input type="text" class="form-control" id="titulo" placeholder="Ej: Ingeniero de Software">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Teléfono</label>
+                <input type="tel" class="form-control" id="telefono">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" placeholder="correo@ejemplo.com"
+                  pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
+                <div class="invalid-feedback">Ingresa un email válido</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Dirección</label>
+                <input type="text" class="form-control" id="direccion" placeholder="Calle Principal 123, Ciudad">
+              </div>
+              <div class="col-12">
+                <label class="form-label">LinkedIn</label>
+                <input type="url" class="form-control" id="linkedin" placeholder="linkedin.com/in/usuario">
               </div>
             </div>
           </div>
         </div>
 
         <!-- Perfil -->
-        <div class="card p-3 mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="mb-0">Perfil</h5>
-            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-              data-bs-target="#panel-perfil">Ocultar/Mostrar</button>
+        <div class="form-section">
+          <div class="section-header" data-bs-toggle="collapse" data-bs-target="#section-perfil">
+            <h5><i class="fas fa-id-card me-2"></i>Perfil Profesional</h5>
+            <i class="fas fa-chevron-down"></i>
           </div>
-          <div id="panel-perfil" class="collapse show">
-            <div id="perfilEditor" class="wysiwyg"></div>
-          </div>
-        </div>
-
-        <!-- Formación -->
-        <div class="card p-3 mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="mb-0">Formación</h5>
-            <div>
-              <button class="btn btn-sm btn-success me-2 add-btn" data-target="formacion">+ Añadir</button>
-              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                data-bs-target="#panel-formacion">Ocultar/Mostrar</button>
-            </div>
-          </div>
-          <div id="panel-formacion" class="collapse show">
-            <div id="formacion"></div>
+          <div id="section-perfil" class="collapse show section-content">
+            <div id="perfilEditor" class="quill-editor"></div>
           </div>
         </div>
 
-        <!-- Experiencia -->
-        <div class="card p-3 mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="mb-0">Experiencia</h5>
-            <div>
-              <button class="btn btn-sm btn-success me-2 add-btn" data-target="experiencia">+ Añadir</button>
-              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                data-bs-target="#panel-experiencia">Ocultar/Mostrar</button>
-            </div>
+        <!-- Experiencia Laboral -->
+        <div class="form-section">
+          <div class="section-header" data-bs-toggle="collapse" data-bs-target="#section-experiencia">
+            <h5><i class="fas fa-briefcase me-2"></i>Experiencia Laboral</h5>
+            <i class="fas fa-chevron-down"></i>
           </div>
-          <div id="panel-experiencia" class="collapse show">
-            <div id="experiencia"></div>
+          <div id="section-experiencia" class="collapse show section-content">
+            <div id="experiencia-list"></div>
+            <button type="button" class="btn btn-add" onclick="addExperiencia()">
+              <i class="fas fa-plus me-2"></i>Agregar Experiencia
+            </button>
+          </div>
+        </div>
+
+        <!-- Formación Académica -->
+        <div class="form-section">
+          <div class="section-header" data-bs-toggle="collapse" data-bs-target="#section-formacion">
+            <h5><i class="fas fa-graduation-cap me-2"></i>Formación Académica</h5>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div id="section-formacion" class="collapse show section-content">
+            <div id="formacion-list"></div>
+            <button type="button" class="btn btn-add" onclick="addFormacion()">
+              <i class="fas fa-plus me-2"></i>Agregar Formación
+            </button>
           </div>
         </div>
 
         <!-- Idiomas -->
-        <div class="card p-3 mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="mb-0">Idiomas</h5>
-            <div>
-              <button class="btn btn-sm btn-success me-2 add-btn" data-target="idiomas">+ Añadir</button>
-              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                data-bs-target="#panel-idiomas">Ocultar/Mostrar</button>
-            </div>
+        <div class="form-section">
+          <div class="section-header" data-bs-toggle="collapse" data-bs-target="#section-idiomas">
+            <h5><i class="fas fa-language me-2"></i>Idiomas</h5>
+            <i class="fas fa-chevron-down"></i>
           </div>
-          <div id="panel-idiomas" class="collapse show">
-            <div id="idiomas"></div>
+          <div id="section-idiomas" class="collapse show section-content">
+            <div id="idiomas-list"></div>
+            <button type="button" class="btn btn-add" onclick="addIdioma()">
+              <i class="fas fa-plus me-2"></i>Agregar Idioma
+            </button>
+          </div>
+        </div>
+
+        <!-- Competencias -->
+        <div class="form-section">
+          <div class="section-header" data-bs-toggle="collapse" data-bs-target="#section-competencias">
+            <h5><i class="fas fa-laptop-code me-2"></i>Competencias</h5>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div id="section-competencias" class="collapse show section-content">
+            <div id="competencias-list"></div>
+            <button type="button" class="btn btn-add" onclick="addCompetencia()">
+              <i class="fas fa-plus me-2"></i>Agregar Competencia
+            </button>
           </div>
         </div>
 
         <!-- Habilidades -->
-        <div class="card p-3 mb-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="mb-0">Habilidades</h5>
-            <div>
-              <button class="btn btn-sm btn-success me-2 add-btn" data-target="habilidades">+ Añadir</button>
-              <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                data-bs-target="#panel-habilidades">Ocultar/Mostrar</button>
-            </div>
+        <div class="form-section">
+          <div class="section-header" data-bs-toggle="collapse" data-bs-target="#section-habilidades">
+            <h5><i class="fas fa-star me-2"></i>Habilidades</h5>
+            <i class="fas fa-chevron-down"></i>
           </div>
-          <div id="panel-habilidades" class="collapse show">
-            <div id="habilidades"></div>
-          </div>
-        </div>
-
-        <!-- Colors & actions -->
-        <div class="d-flex justify-content-between align-items-center">
-          <div class="d-flex gap-2">
-            <button class="color-swatch" data-color="#c62828" style="background:#c62828" title="Rojo"></button>
-            <button class="color-swatch" data-color="#1565c0" style="background:#1565c0" title="Azul"></button>
-            <button class="color-swatch" data-color="#2e7d32" style="background:#2e7d32" title="Verde"></button>
-            <button class="color-swatch" data-color="#6a1b9a" style="background:#6a1b9a" title="Morado"></button>
-            <button class="color-swatch" data-color="#ff8f00" style="background:#ff8f00" title="Naranja"></button>
-          </div>
-          <div>
-            <button id="download" class="btn btn-primary">Descargar (PDF)</button>
+          <div id="section-habilidades" class="collapse show section-content">
+            <div id="habilidades-list"></div>
+            <button type="button" class="btn btn-add" onclick="addHabilidad()">
+              <i class="fas fa-plus me-2"></i>Agregar Habilidad
+            </button>
           </div>
         </div>
 
       </aside>
 
-      <!-- RIGHT: preview (the classic CV layout) -->
-      <section class="col-lg-7">
-        <div id="cvClassic" class="cv-classic card p-4">
-          <!-- Datos personales box -->
-          <div class="data-box mb-3">
-            <div class="data-header classic-accent">Datos personales</div>
-            <div class="data-body d-flex align-items-start gap-3">
-              <div class="data-left flex-fill">
-                <div class="row mb-1">
-                  <div class="col-4 label">Nombre</div>
-                  <div id="pNombre" class="col-8 value"></div>
-                </div>
-                <div class="row mb-1">
-                  <div class="col-4 label">Apellidos</div>
-                  <div id="pApellidos" class="col-8 value"></div>
-                </div>
-                <div class="row mb-1">
-                  <div class="col-4 label">Correo</div>
-                  <div id="pCorreo" class="col-8 value"></div>
-                </div>
-                <div class="row mb-1">
-                  <div class="col-4 label">Teléfono</div>
-                  <div id="pTelefono" class="col-8 value"></div>
-                </div>
-                <div class="row mb-1">
-                  <div class="col-4 label">Dirección</div>
-                  <div id="pDireccion" class="col-8 value"></div>
-                </div>
-                <div class="row mb-1">
-                  <div class="col-4 label">Código postal</div>
-                  <div id="pCodigo" class="col-8 value"></div>
-                </div>
-                <div class="row mb-1">
-                  <div class="col-4 label">Localidad</div>
-                  <div id="pLocalidad" class="col-8 value"></div>
-                </div>
+      <!-- Saved CVs Panel (separate aside below form panel) -->
+      <aside class="cv-saved-panel">
+        <h5><i class="fas fa-list me-2"></i>CVs Guardados</h5>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover" id="saved-cvs-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+              </tr>
+            </thead>
+            <tbody id="saved-cvs-body">
+              <!-- Rows will be added dynamically -->
+            </tbody>
+          </table>
+          <p class="text-muted text-center" id="no-cvs-message">No hay CVs guardados</p>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Right Panel: Preview -->
+    <main class="cv-preview-panel">
+      <!-- Template Selector -->
+      <div class="template-selector">
+        <button class="template-btn active" data-template="moderna" onclick="selectTemplate('moderna')">
+          <i class="fas fa-palette me-2"></i>Moderna
+        </button>
+        <button class="template-btn" data-template="clasica" onclick="selectTemplate('clasica')">
+          <i class="fas fa-file-alt me-2"></i>Clásica
+        </button>
+        <div class="template-spacer"></div>
+        <button class="btn-save" onclick="saveCV()">
+          <i class="fas fa-save me-2"></i>Guardar
+        </button>
+        <button class="btn-download" onclick="downloadPDF()">
+          <i class="fas fa-download me-2"></i>Descargar PDF
+        </button>
+      </div>
+
+      <!-- CV Preview Container -->
+      <div class="cv-preview-wrapper">
+        <!-- TEMPLATE MODERNA -->
+        <div id="cv-moderna" class="cv-template cv-moderna active">
+          <div class="cv-header-moderna">
+            <div class="cv-photo-moderna">
+              <img id="preview-photo-moderna" src="" alt="">
+            </div>
+            <div class="cv-name-moderna">
+              <span class="first-name" id="preview-nombre-moderna"></span>
+              <span class="last-name" id="preview-apellidos-moderna"></span>
+              <span class="job-title" id="preview-titulo-moderna"></span>
+            </div>
+          </div>
+
+          <div class="cv-body-moderna">
+            <div class="cv-left-moderna">
+              <!-- Mi Perfil -->
+              <div class="cv-section-moderna">
+                <h3 class="section-title-moderna">Mi Perfil</h3>
+                <p id="preview-perfil-moderna" class="perfil-text"></p>
               </div>
-              <div class="data-right">
-                <div class="cv-photo-wrap"><img id="cvPhotoClassic" alt=""></div>
+
+              <!-- Experiencia Laboral -->
+              <div class="cv-section-moderna">
+                <h3 class="section-title-moderna section-title-boxed">Experiencia Laboral</h3>
+                <div id="preview-experiencia-moderna"></div>
+              </div>
+
+              <!-- Formación Académica -->
+              <div class="cv-section-moderna">
+                <h3 class="section-title-moderna section-title-boxed">Formación Académica</h3>
+                <div id="preview-formacion-moderna"></div>
               </div>
             </div>
-          </div>
 
-          <!-- PERFIL: ahora con mismo recuadro -->
-          <div class="data-box mb-3">
-            <div class="data-header classic-accent">Perfil</div>
-            <div class="data-body">
-              <div id="cvPerfilClassic" class="section-content"></div>
-            </div>
-          </div>
+            <div class="cv-right-moderna">
+              <!-- Contacto -->
+              <div class="cv-contact-moderna">
+                <div class="contact-item"><i class="fas fa-phone"></i><span id="preview-telefono-moderna"></span>
+                </div>
+                <div class="contact-item"><i class="fas fa-envelope"></i><span id="preview-email-moderna"></span>
+                </div>
+                <div class="contact-item"><i class="fas fa-globe"></i><span id="preview-web-moderna"></span></div>
+                <div class="contact-item"><i class="fas fa-map-marker-alt"></i><span
+                    id="preview-direccion-moderna"></span></div>
+              </div>
 
-          <!-- FORMACIÓN: mismo recuadro -->
-          <div class="data-box mb-3">
-            <div class="data-header classic-accent">Formación</div>
-            <div class="data-body">
-              <div id="cvFormacionClassic" class="section-content"></div>
-            </div>
-          </div>
+              <!-- Idiomas -->
+              <div class="cv-section-moderna">
+                <h3 class="section-title-moderna section-title-boxed">Idiomas</h3>
+                <div id="preview-idiomas-moderna"></div>
+              </div>
 
-          <!-- EXPERIENCIA: mismo recuadro -->
-          <div class="data-box mb-3">
-            <div class="data-header classic-accent">Experiencia</div>
-            <div class="data-body">
-              <div id="cvExperienciaClassic" class="section-content"></div>
-            </div>
-          </div>
+              <!-- Competencias -->
+              <div class="cv-section-moderna">
+                <h3 class="section-title-moderna section-title-boxed">Competencias</h3>
+                <div id="preview-competencias-moderna"></div>
+              </div>
 
-          <!-- COMPETENCIAS: mismo recuadro -->
-          <div class="data-box mb-3">
-            <div class="data-header classic-accent">Competencias</div>
-            <div class="data-body">
-              <div id="cvHabilidadesClassic" class="section-content"></div>
+              <!-- Habilidades -->
+              <div class="cv-section-moderna">
+                <h3 class="section-title-moderna section-title-boxed">Habilidades</h3>
+                <div id="preview-habilidades-moderna"></div>
+              </div>
             </div>
           </div>
         </div>
-      </section>
 
-    </div>
-  </main>
+        <!-- TEMPLATE CLASICA -->
+        <div id="cv-clasica" class="cv-template cv-clasica">
+          <h1 class="cv-title-clasica">Curriculum vitae</h1>
 
-  <!-- Photo modal -->
-  <div class="modal fade" id="photoModal" tabindex="-1" aria-hidden="true">
+          <!-- Datos Personales -->
+          <div class="cv-section-clasica">
+            <h3 class="section-title-clasica">Datos personales</h3>
+            <div class="datos-grid">
+              <div class="datos-content">
+                <div class="dato-row"><span class="dato-label">Nombre</span><span id="preview-fullname-clasica"></span>
+                </div>
+                <div class="dato-row"><span class="dato-label">Correo electrónico</span><span
+                    id="preview-email-clasica"></span></div>
+                <div class="dato-row"><span class="dato-label">Teléfono</span><span
+                    id="preview-telefono-clasica"></span></div>
+                <div class="dato-row"><span class="dato-label">Dirección</span><span
+                    id="preview-direccion-clasica"></span></div>
+                <div class="dato-row"><span class="dato-label">LinkedIn</span><span
+                    id="preview-linkedin-clasica"></span></div>
+              </div>
+              <div class="datos-photo">
+                <img id="preview-photo-clasica" src="" alt="">
+              </div>
+            </div>
+          </div>
+
+          <!-- Perfil -->
+          <div class="cv-section-clasica">
+            <h3 class="section-title-clasica">Perfil</h3>
+            <p id="preview-perfil-clasica" class="perfil-text-clasica"></p>
+          </div>
+
+          <!-- Experiencia -->
+          <div class="cv-section-clasica">
+            <h3 class="section-title-clasica">Experiencia</h3>
+            <div id="preview-experiencia-clasica"></div>
+          </div>
+
+          <!-- Formación -->
+          <div class="cv-section-clasica">
+            <h3 class="section-title-clasica">Formación</h3>
+            <div id="preview-formacion-clasica"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Photo Modal -->
+  <div class="modal fade" id="photoModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Subir foto</h5>
+          <h5 class="modal-title">Subir Foto</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <div id="dropZone" class="drop-zone text-center p-4">
-            <div class="icon mb-2">📷</div>
-            <div class="text mb-2">Arrastra tu imagen aquí o haz click para seleccionar</div>
-            <input id="modalFile" type="file" accept="image/*" class="d-none">
-            <button id="chooseFile" class="btn btn-outline-primary">Elegir imagen</button>
+          <div id="dropZone" class="drop-zone">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Arrastra tu imagen aquí o haz clic para seleccionar</p>
+            <button type="button" class="btn btn-outline-primary"
+              onclick="document.getElementById('photoInput').click()">
+              Elegir imagen
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- libs -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Quill JS -->
   <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+  <!-- Cropper.js -->
+  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.js"></script>
+  <!-- intl-tel-input -->
+  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.5.3/build/js/intlTelInput.min.js"></script>
 
-  <!-- logic -->
+  <!-- Image Cropper Modal -->
+  <div class="modal fade" id="cropperModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-crop-alt me-2"></i>Recortar Imagen</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="cropper-container-wrapper">
+            <img id="cropperImage" src="" alt="Imagen a recortar">
+          </div>
+          <p class="text-muted text-center mt-2 mb-0"><small>Arrastra para ajustar el área de recorte</small></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Cancelar
+          </button>
+          <button type="button" class="btn btn-primary" id="cropConfirmBtn">
+            <i class="fas fa-check me-1"></i>Confirmar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CV Logic -->
   <script src="cv.js"></script>
 </body>
 
