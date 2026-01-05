@@ -717,14 +717,22 @@
     if (el) el.innerHTML = value || '';
   }
 
-  // Download PDF
+  // Download PDF using browser print (allows text selection)
   window.downloadPDF = function () {
     updatePreview();
+
+    // Add print mode class to hide UI elements
     document.body.classList.add('print-mode');
+
+    // Small delay to ensure styles are applied
     setTimeout(() => {
       window.print();
-      setTimeout(() => document.body.classList.remove('print-mode'), 500);
-    }, 200);
+
+      // Remove print mode after printing
+      setTimeout(() => {
+        document.body.classList.remove('print-mode');
+      }, 500);
+    }, 100);
   };
 
   // Save CV to localStorage
@@ -737,6 +745,52 @@
       return;
     }
 
+    // Collect experience data
+    const experiencias = [];
+    document.querySelectorAll('#experiencia-list .dynamic-item').forEach(item => {
+      const empresa = item.querySelector('[data-field="empresa"]')?.value || '';
+      const inicio = item.querySelector('[data-field="inicio"]')?.value || '';
+      const fin = item.querySelector('[data-field="fin"]')?.value || '';
+      const editorEl = item.querySelector('.quill-editor');
+      const descripcion = editorEl?.__quill?.root.innerHTML || '';
+      experiencias.push({ empresa, inicio, fin, descripcion });
+    });
+
+    // Collect formation data
+    const formaciones = [];
+    document.querySelectorAll('#formacion-list .dynamic-item').forEach(item => {
+      const institucion = item.querySelector('[data-field="institucion"]')?.value || '';
+      const titulo = item.querySelector('[data-field="titulo"]')?.value || '';
+      const inicio = item.querySelector('[data-field="inicio"]')?.value || '';
+      const fin = item.querySelector('[data-field="fin"]')?.value || '';
+      const editorEl = item.querySelector('.quill-editor');
+      const descripcion = editorEl?.__quill?.root.innerHTML || '';
+      formaciones.push({ institucion, titulo, inicio, fin, descripcion });
+    });
+
+    // Collect languages
+    const idiomas = [];
+    document.querySelectorAll('#idiomas-list .dynamic-item').forEach(item => {
+      const idioma = item.querySelector('[data-field="idioma"]')?.value || '';
+      idiomas.push({ idioma });
+    });
+
+    // Collect competencies
+    const competencias = [];
+    document.querySelectorAll('#competencias-list .dynamic-item').forEach(item => {
+      const nombre = item.querySelector('[data-field="nombre"]')?.value || '';
+      const nivel = item.querySelector('[data-field="nivel"]')?.value || '';
+      competencias.push({ nombre, nivel });
+    });
+
+    // Collect skills (field is 'nombre' in the HTML)
+    const habilidades = [];
+    document.querySelectorAll('#habilidades-list .dynamic-item').forEach(item => {
+      const nombre = item.querySelector('[data-field="nombre"]')?.value || '';
+      const nivel = item.querySelector('[data-field="nivel"]')?.value || '';
+      habilidades.push({ nombre, nivel });
+    });
+
     // Collect all CV data
     const cvData = {
       id: Date.now(),
@@ -748,7 +802,12 @@
       direccion: getVal('direccion'),
       linkedin: getVal('linkedin'),
       perfil: perfilEditor ? perfilEditor.root.innerHTML : '',
-      photo: currentPhoto
+      photo: currentPhoto,
+      experiencias: experiencias,
+      formaciones: formaciones,
+      idiomas: idiomas,
+      competencias: competencias,
+      habilidades: habilidades
     };
 
     // Get existing CVs from localStorage
@@ -758,6 +817,140 @@
 
     loadSavedCVs();
     alert('CV guardado exitosamente!');
+  };
+
+  // Context Menu Logic
+  let selectedCVId = null;
+  const contextMenu = document.getElementById('cv-context-menu');
+
+  document.addEventListener('click', () => {
+    if (contextMenu) contextMenu.style.display = 'none';
+  });
+
+  window.handleContextMenu = function (e, id) {
+    e.preventDefault();
+    selectedCVId = id;
+
+    // Position menu
+    if (contextMenu) {
+      contextMenu.style.display = 'block';
+      contextMenu.style.left = `${e.pageX}px`;
+      contextMenu.style.top = `${e.pageY}px`;
+    }
+  };
+
+  // Custom Confirmation Modal
+  let cvConfirmOverlay = null;
+
+  function createConfirmModal() {
+    if (cvConfirmOverlay) return cvConfirmOverlay;
+
+    cvConfirmOverlay = document.createElement('div');
+    cvConfirmOverlay.className = 'cv-confirm-overlay';
+    cvConfirmOverlay.innerHTML = `
+      <div class="cv-confirm-dialog" role="dialog" aria-modal="true">
+        <h3 id="confirm-title">Confirmar acción</h3>
+        <p id="confirm-message">¿Estás seguro?</p>
+        <div class="confirm-actions">
+          <button class="btn-cancel">Cancelar</button>
+          <button class="btn-confirm">Confirmar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(cvConfirmOverlay);
+
+    // Apply styles inline
+    cvConfirmOverlay.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.4);z-index:10000;';
+
+    const dialog = cvConfirmOverlay.querySelector('.cv-confirm-dialog');
+    dialog.style.cssText = 'background:#fff;color:#111;padding:24px;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-width:400px;width:90%;text-align:center;';
+
+    const title = cvConfirmOverlay.querySelector('h3');
+    title.style.cssText = 'margin:0 0 12px 0;font-size:1.2rem;font-weight:600;color:#333;';
+
+    const msg = cvConfirmOverlay.querySelector('p');
+    msg.style.cssText = 'margin:0 0 20px 0;font-size:0.95rem;color:#666;';
+
+    const actions = cvConfirmOverlay.querySelector('.confirm-actions');
+    actions.style.cssText = 'display:flex;gap:12px;justify-content:center;';
+
+    const btnCancel = cvConfirmOverlay.querySelector('.btn-cancel');
+    btnCancel.style.cssText = 'background:#f0f0f0;color:#333;border:1px solid #ddd;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:500;transition:all 0.2s;';
+
+    const btnConfirm = cvConfirmOverlay.querySelector('.btn-confirm');
+    btnConfirm.style.cssText = 'background:linear-gradient(135deg,#1B73E8,#4285F4);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:500;transition:all 0.2s;';
+
+    return cvConfirmOverlay;
+  }
+
+  function showConfirmModal(title, message, onConfirm, confirmBtnText = 'Confirmar', isDanger = false) {
+    const overlay = createConfirmModal();
+
+    overlay.querySelector('#confirm-title').textContent = title;
+    overlay.querySelector('#confirm-message').textContent = message;
+
+    const btnConfirm = overlay.querySelector('.btn-confirm');
+    btnConfirm.textContent = confirmBtnText;
+
+    if (isDanger) {
+      btnConfirm.style.background = 'linear-gradient(135deg, #dc3545, #c82333)';
+    } else {
+      btnConfirm.style.background = 'linear-gradient(135deg, #1B73E8, #4285F4)';
+    }
+
+    overlay.style.display = 'flex';
+
+    // Remove old handlers
+    const newBtnCancel = overlay.querySelector('.btn-cancel').cloneNode(true);
+    overlay.querySelector('.btn-cancel').replaceWith(newBtnCancel);
+
+    const newBtnConfirm = overlay.querySelector('.btn-confirm').cloneNode(true);
+    overlay.querySelector('.btn-confirm').replaceWith(newBtnConfirm);
+
+    // Re-apply styles
+    newBtnCancel.style.cssText = 'background:#f0f0f0;color:#333;border:1px solid #ddd;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:500;transition:all 0.2s;';
+    newBtnConfirm.style.cssText = isDanger
+      ? 'background:linear-gradient(135deg,#dc3545,#c82333);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:500;transition:all 0.2s;'
+      : 'background:linear-gradient(135deg,#1B73E8,#4285F4);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:500;transition:all 0.2s;';
+    newBtnConfirm.textContent = confirmBtnText;
+
+    newBtnCancel.addEventListener('click', () => {
+      overlay.style.display = 'none';
+    });
+
+    newBtnConfirm.addEventListener('click', () => {
+      overlay.style.display = 'none';
+      if (onConfirm) onConfirm();
+    });
+  }
+
+  window.confirmLoadCV = function () {
+    if (!selectedCVId) {
+      alert('No hay CV seleccionado');
+      return;
+    }
+    if (contextMenu) contextMenu.style.display = 'none';
+
+    showConfirmModal(
+      'Cargar Datos del CV',
+      '¿Estás seguro de cargar estos datos? Se perderán los datos actuales no guardados.',
+      () => loadCV(selectedCVId),
+      'Cargar',
+      false
+    );
+  };
+
+  window.confirmDeleteCV = function () {
+    if (!selectedCVId) return;
+    if (contextMenu) contextMenu.style.display = 'none';
+
+    showConfirmModal(
+      'Eliminar CV',
+      '¿Estás seguro de eliminar este CV? Esta acción no se puede deshacer.',
+      () => deleteCV(selectedCVId),
+      'Eliminar',
+      true
+    );
   };
 
   // Load saved CVs into table
@@ -779,6 +972,9 @@
 
     savedCVs.forEach((cv, index) => {
       const tr = document.createElement('tr');
+      tr.style.cursor = 'context-menu';
+      tr.oncontextmenu = (e) => handleContextMenu(e, cv.id);
+
       tr.innerHTML = `
         <td>${index + 1}</td>
         <td>${cv.nombre}</td>
@@ -795,17 +991,29 @@
 
     if (!cv) return;
 
+    // Fill basic fields
     document.getElementById('nombre').value = cv.nombre || '';
     document.getElementById('apellidos').value = cv.apellidos || '';
     document.getElementById('titulo').value = cv.titulo || '';
     document.getElementById('email').value = cv.email || '';
     document.getElementById('direccion').value = cv.direccion || '';
+
+    // Fill Phone
+    if (window.phoneIti) {
+      window.phoneIti.setNumber(cv.telefono || '');
+    } else {
+      document.getElementById('telefono').value = cv.telefono || '';
+    }
+
+    // Fill LinkedIn
     document.getElementById('linkedin').value = cv.linkedin || '';
 
+    // Fill Profile
     if (cv.perfil && perfilEditor) {
       perfilEditor.root.innerHTML = cv.perfil;
     }
 
+    // Fill Photo
     if (cv.photo) {
       currentPhoto = cv.photo;
       const photoPreview = document.getElementById('photoPreview');
@@ -817,13 +1025,119 @@
       if (photoBox) photoBox.classList.add('has-photo');
     }
 
+    // Clear and reload Experience
+    const expList = document.getElementById('experiencia-list');
+    if (expList) expList.innerHTML = '';
+    if (cv.experiencias && cv.experiencias.length > 0) {
+      cv.experiencias.forEach(exp => {
+        addExperiencia();
+        const items = document.querySelectorAll('#experiencia-list .dynamic-item');
+        const lastItem = items[items.length - 1];
+        if (lastItem) {
+          const empresaInput = lastItem.querySelector('[data-field="empresa"]');
+          if (empresaInput) empresaInput.value = exp.empresa || '';
+          const inicioSelect = lastItem.querySelector('[data-field="inicio"]');
+          if (inicioSelect) inicioSelect.value = exp.inicio || '';
+          const finSelect = lastItem.querySelector('[data-field="fin"]');
+          if (finSelect) finSelect.value = exp.fin || '';
+          const editorEl = lastItem.querySelector('.quill-editor');
+          if (editorEl && editorEl.__quill && exp.descripcion) {
+            editorEl.__quill.root.innerHTML = exp.descripcion;
+          }
+        }
+      });
+    } else {
+      addExperiencia();
+    }
+
+    // Clear and reload Formation
+    const formList = document.getElementById('formacion-list');
+    if (formList) formList.innerHTML = '';
+    if (cv.formaciones && cv.formaciones.length > 0) {
+      cv.formaciones.forEach(form => {
+        addFormacion();
+        const items = document.querySelectorAll('#formacion-list .dynamic-item');
+        const lastItem = items[items.length - 1];
+        if (lastItem) {
+          const instInput = lastItem.querySelector('[data-field="institucion"]');
+          if (instInput) instInput.value = form.institucion || '';
+          const tituloInput = lastItem.querySelector('[data-field="titulo"]');
+          if (tituloInput) tituloInput.value = form.titulo || '';
+          const inicioSelect = lastItem.querySelector('[data-field="inicio"]');
+          if (inicioSelect) inicioSelect.value = form.inicio || '';
+          const finSelect = lastItem.querySelector('[data-field="fin"]');
+          if (finSelect) finSelect.value = form.fin || '';
+          const editorEl = lastItem.querySelector('.quill-editor');
+          if (editorEl && editorEl.__quill && form.descripcion) {
+            editorEl.__quill.root.innerHTML = form.descripcion;
+          }
+        }
+      });
+    } else {
+      addFormacion();
+    }
+
+    // Clear and reload Languages
+    const langList = document.getElementById('idiomas-list');
+    if (langList) langList.innerHTML = '';
+    if (cv.idiomas && cv.idiomas.length > 0) {
+      cv.idiomas.forEach(lang => {
+        addIdioma();
+        const items = document.querySelectorAll('#idiomas-list .dynamic-item');
+        const lastItem = items[items.length - 1];
+        if (lastItem) {
+          const idiomaInput = lastItem.querySelector('[data-field="idioma"]');
+          if (idiomaInput) idiomaInput.value = lang.idioma || '';
+        }
+      });
+    } else {
+      addIdioma();
+    }
+
+    // Clear and reload Competencies
+    const compList = document.getElementById('competencias-list');
+    if (compList) compList.innerHTML = '';
+    if (cv.competencias && cv.competencias.length > 0) {
+      cv.competencias.forEach(comp => {
+        addCompetencia();
+        const items = document.querySelectorAll('#competencias-list .dynamic-item');
+        const lastItem = items[items.length - 1];
+        if (lastItem) {
+          const nombreInput = lastItem.querySelector('[data-field="nombre"]');
+          if (nombreInput) nombreInput.value = comp.nombre || '';
+          const nivelSelect = lastItem.querySelector('[data-field="nivel"]');
+          if (nivelSelect) nivelSelect.value = comp.nivel || '';
+        }
+      });
+    } else {
+      addCompetencia();
+    }
+
+    // Clear and reload Skills (field is 'nombre' in the HTML)
+    const skillList = document.getElementById('habilidades-list');
+    if (skillList) skillList.innerHTML = '';
+    if (cv.habilidades && cv.habilidades.length > 0) {
+      cv.habilidades.forEach(skill => {
+        addHabilidad();
+        const items = document.querySelectorAll('#habilidades-list .dynamic-item');
+        const lastItem = items[items.length - 1];
+        if (lastItem) {
+          const nombreInput = lastItem.querySelector('[data-field="nombre"]');
+          if (nombreInput) nombreInput.value = skill.nombre || '';
+          const nivelSelect = lastItem.querySelector('[data-field="nivel"]');
+          if (nivelSelect) nivelSelect.value = skill.nivel || '';
+        }
+      });
+    } else {
+      addHabilidad();
+    }
+
+    // Update preview
     updatePreview();
   };
 
-  // Delete a saved CV
+  // Delete a saved CV (called from confirmDeleteCV which already shows modal)
   window.deleteCV = function (id) {
-    if (!confirm('¿Estás seguro de eliminar este CV?')) return;
-
     let savedCVs = JSON.parse(localStorage.getItem('saved_cvs') || '[]');
     savedCVs = savedCVs.filter(c => c.id !== id);
     localStorage.setItem('saved_cvs', JSON.stringify(savedCVs));
