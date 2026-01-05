@@ -239,25 +239,38 @@
       <div class="cv-preview-wrapper">
         <!-- TEMPLATE MODERNA -->
         <div id="cv-moderna" class="cv-template cv-moderna active">
+          <!-- Header with photo, name, contact, and profile - ALL IN GRAY -->
           <div class="cv-header-moderna">
-            <div class="cv-photo-moderna">
-              <img id="preview-photo-moderna" src="" alt="">
+            <!-- Top row: Photo + Name -->
+            <div class="cv-header-top">
+              <div class="cv-photo-moderna">
+                <img id="preview-photo-moderna" src="" alt="">
+              </div>
+              <div class="cv-header-name">
+                <span class="first-name" id="preview-nombre-moderna"></span>
+                <span class="last-name" id="preview-apellidos-moderna"></span>
+                <span class="job-title" id="preview-titulo-moderna"></span>
+              </div>
             </div>
-            <div class="cv-name-moderna">
-              <span class="first-name" id="preview-nombre-moderna"></span>
-              <span class="last-name" id="preview-apellidos-moderna"></span>
-              <span class="job-title" id="preview-titulo-moderna"></span>
+            <!-- Bottom row: Mi Perfil + Contact -->
+            <div class="cv-header-bottom">
+              <div class="cv-header-perfil">
+                <h3 class="section-title-header">Mi Perfil</h3>
+                <p id="preview-perfil-moderna" class="perfil-text-header"></p>
+              </div>
+              <div class="cv-header-contact">
+                <div class="contact-item"><i class="fas fa-phone"></i><span id="preview-telefono-moderna"></span></div>
+                <div class="contact-item"><i class="fas fa-envelope"></i><span id="preview-email-moderna"></span></div>
+                <div class="contact-item"><i class="fas fa-globe"></i><span id="preview-web-moderna"></span></div>
+                <div class="contact-item"><i class="fas fa-map-marker-alt"></i><span
+                    id="preview-direccion-moderna"></span></div>
+              </div>
             </div>
           </div>
 
+          <!-- Body: Two columns side by side -->
           <div class="cv-body-moderna">
             <div class="cv-left-moderna">
-              <!-- Mi Perfil -->
-              <div class="cv-section-moderna">
-                <h3 class="section-title-moderna">Mi Perfil</h3>
-                <p id="preview-perfil-moderna" class="perfil-text"></p>
-              </div>
-
               <!-- Experiencia Laboral -->
               <div class="cv-section-moderna">
                 <h3 class="section-title-moderna section-title-boxed">Experiencia Laboral</h3>
@@ -272,17 +285,6 @@
             </div>
 
             <div class="cv-right-moderna">
-              <!-- Contacto -->
-              <div class="cv-contact-moderna">
-                <div class="contact-item"><i class="fas fa-phone"></i><span id="preview-telefono-moderna"></span>
-                </div>
-                <div class="contact-item"><i class="fas fa-envelope"></i><span id="preview-email-moderna"></span>
-                </div>
-                <div class="contact-item"><i class="fas fa-globe"></i><span id="preview-web-moderna"></span></div>
-                <div class="contact-item"><i class="fas fa-map-marker-alt"></i><span
-                    id="preview-direccion-moderna"></span></div>
-              </div>
-
               <!-- Idiomas -->
               <div class="cv-section-moderna">
                 <h3 class="section-title-moderna section-title-boxed">Idiomas</h3>
@@ -342,10 +344,27 @@
             <div id="preview-experiencia-clasica"></div>
           </div>
 
-          <!-- Formación -->
           <div class="cv-section-clasica">
             <h3 class="section-title-clasica">Formación</h3>
             <div id="preview-formacion-clasica"></div>
+          </div>
+
+          <!-- Idiomas -->
+          <div class="cv-section-clasica">
+            <h3 class="section-title-clasica">Idiomas</h3>
+            <div id="preview-idiomas-clasica"></div>
+          </div>
+
+          <!-- Competencias -->
+          <div class="cv-section-clasica">
+            <h3 class="section-title-clasica">Competencias</h3>
+            <div id="preview-competencias-clasica"></div>
+          </div>
+
+          <!-- Habilidades -->
+          <div class="cv-section-clasica">
+            <h3 class="section-title-clasica">Habilidades</h3>
+            <div id="preview-habilidades-clasica"></div>
           </div>
         </div>
       </div>
@@ -421,6 +440,10 @@
       </div>
     </div>
   </div>
+
+  <!-- jsPDF and html2canvas for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <!-- CV Logic -->
   <script src="cv.js"></script>

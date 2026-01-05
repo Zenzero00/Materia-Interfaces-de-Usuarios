@@ -220,13 +220,47 @@
   let skillCounter = 0;
   let abilityCounter = 0;
 
-  // Generate year options from 1976 to 2026
+  // Generate year options for select
   function generateYearOptions() {
     let options = '<option value="">Año</option>';
     for (let year = 2026; year >= 1976; year--) {
       options += `<option value="${year}">${year}</option>`;
     }
     return options;
+  }
+
+  // Make select searchable - typing numbers will jump to matching year
+  function makeSelectSearchable(selectEl) {
+    let searchBuffer = '';
+    let clearTimer = null;
+
+    selectEl.addEventListener('keydown', (e) => {
+      // Only handle number keys
+      if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+
+        // Clear previous timer
+        if (clearTimer) clearTimeout(clearTimer);
+
+        // Add to search buffer
+        searchBuffer += e.key;
+
+        // Find matching option
+        const options = selectEl.options;
+        for (let i = 0; i < options.length; i++) {
+          if (options[i].value.startsWith(searchBuffer)) {
+            selectEl.selectedIndex = i;
+            selectEl.dispatchEvent(new Event('change'));
+            break;
+          }
+        }
+
+        // Clear buffer after 1 second of no typing
+        clearTimer = setTimeout(() => {
+          searchBuffer = '';
+        }, 1000);
+      }
+    });
   }
 
   // Add Experiencia
@@ -278,6 +312,10 @@
 
     startSelect.addEventListener('change', validateDates);
     endSelect.addEventListener('change', validateDates);
+
+    // Make selects searchable by typing
+    makeSelectSearchable(startSelect);
+    makeSelectSearchable(endSelect);
 
     // Initialize Quill for this experience item
     if (typeof Quill !== 'undefined') {
@@ -342,6 +380,10 @@
     startSelect.addEventListener('change', validateDates);
     endSelect.addEventListener('change', validateDates);
 
+    // Make selects searchable by typing
+    makeSelectSearchable(startSelect);
+    makeSelectSearchable(endSelect);
+
     attachInputListeners(div);
     updatePreview();
   };
@@ -381,11 +423,11 @@
         </div>
         <div class="col-5">
           <select class="form-select form-select-sm" data-field="nivel">
-            <option value="20">20%</option>
-            <option value="40">40%</option>
-            <option value="60">60%</option>
-            <option value="80" selected>80%</option>
-            <option value="100">100%</option>
+            <option value="20">Principiante</option>
+            <option value="40">Bajo</option>
+            <option value="60">Medio</option>
+            <option value="80" selected>Alto</option>
+            <option value="100">Nativo</option>
           </select>
         </div>
       </div>
@@ -410,11 +452,11 @@
         </div>
         <div class="col-5">
           <select class="form-select form-select-sm" data-field="nivel">
-            <option value="1">1 punto</option>
-            <option value="2">2 puntos</option>
-            <option value="3">3 puntos</option>
-            <option value="4">4 puntos</option>
-            <option value="5" selected>5 puntos</option>
+            <option value="1">Principiante</option>
+            <option value="2">Bajo</option>
+            <option value="3">Medio</option>
+            <option value="4">Alto</option>
+            <option value="5" selected>Nativo</option>
           </select>
         </div>
       </div>
@@ -705,6 +747,56 @@
         `;
       });
     }
+
+    // Idiomas - Clasica
+    const langClasica = document.getElementById('preview-idiomas-clasica');
+    if (langClasica) {
+      langClasica.innerHTML = '';
+      document.querySelectorAll('#idiomas-list .dynamic-item').forEach(item => {
+        const idioma = item.querySelector('[data-field="idioma"]')?.value || '';
+        langClasica.innerHTML += `
+          <div class="lang-item-clasica">• ${escapeHtml(idioma)}</div>
+        `;
+      });
+    }
+
+    // Competencias - Clasica (show name and level text)
+    const skillClasica = document.getElementById('preview-competencias-clasica');
+    if (skillClasica) {
+      skillClasica.innerHTML = '';
+      const nivelNombres = { '20': 'Principiante', '40': 'Bajo', '60': 'Medio', '80': 'Alto', '100': 'Nativo' };
+      document.querySelectorAll('#competencias-list .dynamic-item').forEach(item => {
+        const nombreSkill = item.querySelector('[data-field="nombre"]')?.value || '';
+        const nivel = item.querySelector('[data-field="nivel"]')?.value || '80';
+        const nivelTexto = nivelNombres[nivel] || 'Alto';
+
+        skillClasica.innerHTML += `
+          <div class="skill-item-clasica-simple">
+            <span class="skill-name-clasica">${escapeHtml(nombreSkill)}</span>
+            <span class="skill-level-clasica">${nivelTexto}</span>
+          </div>
+        `;
+      });
+    }
+
+    // Habilidades - Clasica (show name and level text)
+    const abilityClasica = document.getElementById('preview-habilidades-clasica');
+    if (abilityClasica) {
+      abilityClasica.innerHTML = '';
+      const nivelNombresAb = { '1': 'Principiante', '2': 'Bajo', '3': 'Medio', '4': 'Alto', '5': 'Nativo' };
+      document.querySelectorAll('#habilidades-list .dynamic-item').forEach(item => {
+        const nombreAbility = item.querySelector('[data-field="nombre"]')?.value || '';
+        const nivel = item.querySelector('[data-field="nivel"]')?.value || '5';
+        const nivelTexto = nivelNombresAb[nivel] || 'Nativo';
+
+        abilityClasica.innerHTML += `
+          <div class="ability-item-clasica-simple">
+            <span class="ability-name-clasica">${escapeHtml(nombreAbility)}</span>
+            <span class="ability-level-clasica">${nivelTexto}</span>
+          </div>
+        `;
+      });
+    }
   }
 
   function setText(id, value) {
@@ -717,7 +809,7 @@
     if (el) el.innerHTML = value || '';
   }
 
-  // Download PDF using browser print (allows text selection)
+  // Download PDF using browser print (native, with selectable text)
   window.downloadPDF = function () {
     updatePreview();
 
@@ -731,8 +823,8 @@
       // Remove print mode after printing
       setTimeout(() => {
         document.body.classList.remove('print-mode');
-      }, 500);
-    }, 100);
+      }, 1000);
+    }, 200);
   };
 
   // Save CV to localStorage
