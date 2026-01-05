@@ -1301,25 +1301,54 @@ document.addEventListener('DOMContentLoaded', function () {
         // inject fonts
         if (settings.primary) injectGoogleFontInDoc(doc, settings.primary);
         if (settings.secondary) injectGoogleFontInDoc(doc, settings.secondary);
-        // Apply families: primary -> titles (h2), secondary -> subtitles (h4) and paragraphs
-        if (settings.secondary) doc.body.style.fontFamily = settings.secondary + ', sans-serif';
-        if (settings.primary) {
-            doc.querySelectorAll('h2').forEach(h => { h.style.fontFamily = settings.primary + ', sans-serif'; });
-        }
+
+        // Apply font to body (affects all elements)
         if (settings.secondary) {
-            doc.querySelectorAll('h4').forEach(h => { h.style.fontFamily = settings.secondary + ', sans-serif'; });
-            doc.querySelectorAll('p').forEach(pel => { pel.style.fontFamily = settings.secondary + ', sans-serif'; });
+            doc.body.style.setProperty('font-family', settings.secondary + ', sans-serif', 'important');
         }
 
-        // apply sizes if provided to all matching elements
+        // All heading elements use primary font
+        const headings = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+        if (settings.primary) {
+            headings.forEach(tag => {
+                doc.querySelectorAll(tag).forEach(el => {
+                    el.style.setProperty('font-family', settings.primary + ', sans-serif', 'important');
+                });
+            });
+        }
+
+        // All other text elements use secondary font
+        const textElements = ['p', 'a', 'span', 'li', 'label', 'button', 'input', 'textarea', 'em', 'strong'];
+        if (settings.secondary) {
+            textElements.forEach(tag => {
+                doc.querySelectorAll(tag).forEach(el => {
+                    el.style.setProperty('font-family', settings.secondary + ', sans-serif', 'important');
+                });
+            });
+        }
+
+        // Set CSS variables on :root for font sizes (this affects CSS rules using these variables)
+        const root = doc.documentElement;
         if (typeof settings.titleSize !== 'undefined') {
-            doc.querySelectorAll('h2').forEach(h => h.style.fontSize = settings.titleSize + 'px');
+            root.style.setProperty('--title-font-size', settings.titleSize + 'px');
+            // Also apply inline for elements without CSS variable usage
+            doc.querySelectorAll('h1, h2').forEach(el => {
+                el.style.setProperty('font-size', settings.titleSize + 'px', 'important');
+            });
         }
         if (typeof settings.subtitleSize !== 'undefined') {
-            doc.querySelectorAll('h4').forEach(h => h.style.fontSize = settings.subtitleSize + 'px');
+            root.style.setProperty('--subtitle-font-size', settings.subtitleSize + 'px');
+            // Also apply inline for elements without CSS variable usage
+            doc.querySelectorAll('h3, h4, h5, h6').forEach(el => {
+                el.style.setProperty('font-size', settings.subtitleSize + 'px', 'important');
+            });
         }
         if (typeof settings.paragraphSize !== 'undefined') {
-            doc.querySelectorAll('p').forEach(pel => pel.style.fontSize = settings.paragraphSize + 'px');
+            root.style.setProperty('--paragraph-font-size', settings.paragraphSize + 'px');
+            // Also apply inline for all text elements
+            doc.querySelectorAll('p, li, span, a, em, strong, button, .green-button a, .orange-button a').forEach(el => {
+                el.style.setProperty('font-size', settings.paragraphSize + 'px', 'important');
+            });
         }
     }
 

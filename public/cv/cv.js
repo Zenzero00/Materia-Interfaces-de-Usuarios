@@ -26,6 +26,67 @@
     }
   })();
 
+  // Load and apply admin settings (colors, fonts, sizes)
+  (function loadAdminSettings() {
+    try {
+      // Load color settings
+      const colorSettings = JSON.parse(localStorage.getItem('admin_color_settings') || '{}');
+      if (colorSettings.primary || colorSettings.secondary || colorSettings.accent || colorSettings.neutral) {
+        const root = document.documentElement;
+        // Apply colors to CSS variables for CV templates
+        if (colorSettings.accent) {
+          root.style.setProperty('--moderna-dark', colorSettings.accent);   // Header background
+          root.style.setProperty('--clasica-gray', colorSettings.accent);   // Section headers
+          root.style.setProperty('--cv-text', colorSettings.accent);        // Dark text color
+        }
+        if (colorSettings.secondary) {
+          root.style.setProperty('--moderna-accent', colorSettings.secondary); // Accent color (buttons, bars)
+        }
+        if (colorSettings.primary) {
+          root.style.setProperty('--primary', colorSettings.primary);  // Primary color
+          root.style.setProperty('--cv-primary', colorSettings.primary); // Checkmarks, highlights
+        }
+        if (colorSettings.neutral) {
+          root.style.setProperty('--cv-background', colorSettings.neutral); // CV background
+          root.style.setProperty('--cv-text-light', colorSettings.neutral); // Light/white text
+        }
+        console.log('CV: Colores del admin aplicados', colorSettings);
+      }
+
+      // Load typography settings
+      const typoSettings = JSON.parse(localStorage.getItem('admin_typography_settings') || '{}');
+      if (typoSettings.primary || typoSettings.secondary || typoSettings.paragraphSize) {
+        const root = document.documentElement;
+        // Apply font families
+        if (typoSettings.secondary) {
+          // Inject Google Font
+          const fontName = typoSettings.secondary;
+          const linkId = 'cv-gfont-' + fontName.replace(/\s+/g, '-');
+          if (!document.getElementById(linkId)) {
+            const link = document.createElement('link');
+            link.id = linkId;
+            link.rel = 'stylesheet';
+            link.href = 'https://fonts.googleapis.com/css2?family=' + encodeURIComponent(fontName) + ':wght@300;400;500;600;700&display=swap';
+            document.head.appendChild(link);
+          }
+          // Apply to CV templates
+          document.querySelectorAll('.cv-template').forEach(tpl => {
+            tpl.style.fontFamily = fontName + ', sans-serif';
+          });
+        }
+        // Apply font size to CV
+        if (typoSettings.paragraphSize) {
+          document.querySelectorAll('.cv-template').forEach(tpl => {
+            tpl.style.fontSize = typoSettings.paragraphSize + 'px';
+          });
+        }
+        console.log('CV: Tipografía del admin aplicada', typoSettings);
+      }
+    } catch (e) {
+      console.warn('No se pudo cargar configuración del admin:', e);
+    }
+  })();
+
   // Initialize Quill WYSIWYG Editors
   const quillToolbar = [
     ['bold', 'italic', 'underline'],

@@ -41,6 +41,10 @@ font & reset css
   /* Oscuro */
   --neutral-color: #ffffff;
   /* Blanco */
+  /* Font sizes */
+  --title-font-size: 56px;
+  --subtitle-font-size: 36px;
+  --paragraph-font-size: 15px;
 }
 
 /* Asegurar que todos los elementos usen las variables */
@@ -307,7 +311,7 @@ body {
 }
 
 .green-button a {
-  font-size: 14px;
+  font-size: var(--paragraph-font-size);
   color: var(--neutral-color);
   background-color: var(--primary-color);
   padding: 12px 30px;
@@ -324,7 +328,7 @@ body {
 }
 
 .orange-button a {
-  font-size: 14px;
+  font-size: var(--paragraph-font-size);
   color: var(--neutral-color);
   background-color: var(--secondary-color);
   padding: 12px 30px;
@@ -353,7 +357,7 @@ section {
 }
 
 .section-heading h6 {
-  font-size: 16px;
+  font-size: var(--subtitle-font-size);
   text-transform: uppercase;
   color: var(--secondary-color);
   font-weight: 700;
@@ -362,7 +366,7 @@ section {
 .section-heading h4 {
   margin-top: 10px;
   line-height: 40px;
-  font-size: 36px;
+  font-size: var(--subtitle-font-size);
   font-weight: 700;
   text-transform: capitalize;
   color: var(--accent-color);
