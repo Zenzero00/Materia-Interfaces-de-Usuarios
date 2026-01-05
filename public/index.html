@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="assets/css/animate.css">
   <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css">
   <link rel="stylesheet" href="assets/css/carrusel.css">
+  <link rel="stylesheet" href="loader/assets/css/loader.css">
   <!--
 
 TemplateMo 574 Mexant
@@ -938,7 +939,7 @@ https://templatemo.com/tm-574-mexant
               role: role
             }));
             // Redirect to admin page
-            window.location.href = '/admin/admin.html';
+            navigateWithLoader('/admin/admin.html');
           } else {
             // Save current user session for normal user
             localStorage.setItem('user_session', JSON.stringify({
@@ -948,7 +949,7 @@ https://templatemo.com/tm-574-mexant
               role: role
             }));
             // Redirect normal users to CV page
-            window.location.href = '/cv/cv.html';
+            navigateWithLoader('/cv/cv.html');
           }
         });
       }
@@ -993,7 +994,7 @@ https://templatemo.com/tm-574-mexant
             role: found.role
           }));
           if (found.role === 'admin') {
-            window.location.href = '/admin/admin.html';
+            navigateWithLoader('/admin/admin.html');
           } else {
             // Save session for normal user
             localStorage.setItem('user_session', JSON.stringify({
@@ -1003,7 +1004,7 @@ https://templatemo.com/tm-574-mexant
               role: found.role
             }));
             // Redirect normal users to CV page
-            window.location.href = '/cv/cv.html';
+            navigateWithLoader('/cv/cv.html');
           }
         });
       }
@@ -1082,6 +1083,7 @@ https://templatemo.com/tm-574-mexant
       });
     });
   </script>
+  <script src="loader/page-loader.js"></script>
 </body>
 
 </html>

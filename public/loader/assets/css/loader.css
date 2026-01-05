@@ -1,0 +1,437 @@
+.loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+}
+
+.loader.finished {
+  animation: 1s linear forwards load-finished-loader;
+}
+
+.loader.finished> :only-child {
+  animation: 1s linear forwards load-finished-content;
+}
+
+.triangle {
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.rhomboid {
+  clip-path: polygon(0 100%, 33.33333333333333% 0, 100% 0, 66.66666666666667% 100%);
+}
+
+.tangram {
+  position: relative;
+  --figure-width: 100px;
+  --figure-height: 100px;
+  --fw: var(--figure-width, 100px);
+  --fh: var(--figure-height, 100px);
+  width: calc(var(--fw) * 5.656854249492380);
+  /* √2*4 */
+  height: calc(var(--fh) * 5.414213562373095);
+  /* 4 + √2 */
+  transform: translate(calc(var(--fw) * 1.414213562373095),
+      /* √2 */
+      calc(var(--fh) * 1.292893218813452));
+  /* 2 - √2/2 */
+  animation: 6.25s linear 0.75s infinite forwards running anim-tangram;
+}
+
+@media (width < 767px),
+(height < 640px) {
+  .tangram {
+    --figure-width: 50px;
+    --figure-height: 50px;
+  }
+}
+
+.tangram>* {
+  width: var(--figure-width, 100px);
+  height: var(--figure-height, 100px);
+  transform-origin: 0 0;
+  position: absolute;
+}
+
+.tangram>.f1,
+.tangram>.f2,
+.tangram>.f3,
+.tangram>.f4,
+.tangram>.f5,
+.tangram>.f6,
+.tangram>.f7 {
+  animation: 6.25s linear 0.75s infinite forwards running;
+}
+
+
+.loader.finished .tangram,
+.loader.finished .tangram>* {
+  animation-play-state: paused;
+}
+
+.tangram>.f1 {
+  transform: translate(141.4213562373095%, 141.4213562373095%)
+    /* √2 */
+    rotate(-135deg) scale(2);
+  animation-name: anim-f1;
+}
+
+.tangram>.f2 {
+  transform: translate(141.4213562373095%, 141.4213562373095%)
+    /* √2 */
+    rotate(135deg) scale(2);
+  animation-name: anim-f2;
+}
+
+.tangram>.f3 {
+  transform: translate(282.8427124746190%, 282.8427124746190%)
+    /* √2*2 */
+    rotate(-180deg) scale(1.414213562373095);
+  /* √2 */
+  animation-name: anim-f3;
+}
+
+.tangram>.f4 {
+  transform: translate(212.1320343559643%, 70.71067811865475%)
+    /* √2*3/2; √2/2 */
+    rotate(-45deg);
+  animation-name: anim-f4;
+}
+
+.tangram>.f5 {
+  transform: translate(141.4213562373095%, 141.4213562373095%)
+    /* √2 */
+    rotate(45deg);
+  animation-name: anim-f5;
+}
+
+.tangram>.f6 {
+  transform: translate(141.4213562373095%, 141.4213562373095%)
+    /* √2 */
+    rotate(-45deg);
+  animation-name: anim-f6;
+}
+
+.tangram>.f7 {
+  transform: translate(0%, 212.1320343559643%)
+    /* √2*3/2 */
+    scale(2.121320343559643, 0.7071067811865475);
+  /* √2*3/2; √2/2 */
+  animation-name: anim-f7;
+}
+
+
+@keyframes anim-tangram {
+
+  8%,
+  20% {
+    transform: translate(calc(var(--fw) * 1.32842712474619),
+        /* √2*2 - 1.5 */
+        calc(var(--fh) * 0.7071067811865475));
+    /* √2/2 */
+  }
+
+  28%,
+  40% {
+    transform: translate(0,
+        calc(var(--fh) * 1.292893218813452));
+    /* 2 - √2/2 */
+  }
+
+  48%,
+  60% {
+    transform: translate(calc(var(--fw) * 0.8284271247461901),
+        /* √2*2 - 2 */
+        calc(var(--fh) * 0.7928932188134525));
+    /* 1.5 - √2/2 */
+  }
+
+  68%,
+  80% {
+    transform: translate(calc(var(--fw) * 1.32842712474619),
+        /* √2*2 - 1.5 */
+        0);
+  }
+
+  88%,
+  100% {
+    transform: translate(calc(var(--fw) * 1.414213562373095),
+        /* √2 */
+        calc(var(--fh) * 1.292893218813452));
+    /* 2 - √2/2 */
+  }
+}
+
+@keyframes anim-f1 {
+
+  8%,
+  20% {
+    transform: translate(250%, 200%) rotate(90deg) scale(2);
+  }
+
+  28%,
+  40% {
+    transform: translate(424.2640687119285%, 212.1320343559643%)
+      /* √2*3; √2*3/2 */
+      rotate(-135deg) scale(2);
+  }
+
+  48%,
+  60% {
+    transform: translate(200%, 0%) scale(2);
+  }
+
+  68%,
+  80% {
+    transform: translate(100%, 541.4213562373095%)
+      /* 4 + √2 */
+      rotate(-90deg) scale(2);
+  }
+
+  88%,
+  100% {
+    transform: translate(141.4213562373095%, 141.4213562373095%)
+      /* √2 */
+      rotate(-135deg) scale(2);
+  }
+}
+
+@keyframes anim-f2 {
+
+  8%,
+  20% {
+    transform: translate(50%, 400%) rotate(-90deg) scale(2);
+  }
+
+  28%,
+  40% {
+    transform: translate(141.4213562373095%, 212.1320343559643%)
+      /* √2; √2*3/2 */
+      rotate(-135deg) scale(2);
+  }
+
+  48%,
+  60% {
+    transform: translate(200%, 0%) rotate(90deg) scale(2);
+  }
+
+  68%,
+  80% {
+    transform: translate(150%, 0%) rotate(45deg) scale(2);
+  }
+
+  88%,
+  100% {
+    transform: translate(141.4213562373095%, 141.4213562373095%)
+      /* √2 */
+      rotate(135deg) scale(2);
+  }
+}
+
+@keyframes anim-f3 {
+
+  8%,
+  20% {
+    transform: translate(200%, 0%) rotate(45deg) scale(1.414213562373095);
+    /* √2 */
+  }
+
+  28%,
+  40% {
+    transform: translate(282.8427124746190%, 212.1320343559643%)
+      /* √2*2; √2*3/2 */
+      rotate(-90deg) scale(1.414213562373095);
+  }
+
+  48%,
+  60% {
+    transform: translate(170.71067811865475%, 312.1320343559643%)
+      /* 1 + √2/2; 1 + √2*3/2 */
+      rotate(-180deg) scale(1.414213562373095);
+  }
+
+  68%,
+  80% {
+    transform: translate(200%, 241.4213562373095%)
+      /* 1 + √2 */
+      rotate(45deg) scale(1.414213562373095);
+  }
+
+  88%,
+  100% {
+    transform: translate(282.8427124746190%, 282.8427124746190%)
+      /* √2*2 */
+      rotate(-180deg) scale(1.414213562373095);
+    /* √2 */
+  }
+}
+
+@keyframes anim-f4 {
+
+  8%,
+  20% {
+    transform: none;
+  }
+
+  28%,
+  40% {
+    transform: translate(212.1320343559643%, 141.4213562373095%)
+      /* √2*3/2; √2 */
+      rotate(-45deg);
+  }
+
+  48%,
+  60% {
+    transform: translate(100%, 382.8427124746190%)
+      /* 1 + √2*2 */
+      rotate(-135deg);
+  }
+
+  68%,
+  80% {
+    transform: translate(100%, 541.4213562373095%)
+      /* 4 + √2 */
+      rotate(-180deg);
+  }
+
+  88%,
+  100% {
+    transform: translate(212.1320343559643%, 70.71067811865475%)
+      /* √2*3/2; √2/2 */
+      rotate(-45deg);
+  }
+}
+
+@keyframes anim-f5 {
+
+  8%,
+  20% {
+    transform: translate(300%, 0%) rotate(90deg);
+  }
+
+  28%,
+  40% {
+    transform: translate(282.8427124746190%, 0%)
+      /* √2*2 */
+      rotate(45deg);
+  }
+
+  48%,
+  60% {
+    transform: translate(170.71067811865475%, 170.71067811865475%)
+      /* 1 + √2/2 */
+      rotate(135deg);
+  }
+
+  68%,
+  80% {
+    transform: translate(200%, 341.4213562373095%)
+      /* 2 + √2 */
+      rotate(90deg);
+  }
+
+  88%,
+  100% {
+    transform: translate(141.4213562373095%, 141.4213562373095%)
+      /* √2 */
+      rotate(45deg);
+  }
+}
+
+@keyframes anim-f6 {
+
+  8%,
+  20% {
+    transform: translate(100%, 100%);
+  }
+
+  28%,
+  40% {
+    transform: translate(141.4213562373095%, 212.1320343559643%)
+      /* √2; √2*3/2 */
+      rotate(-45deg);
+  }
+
+  48%,
+  60% {
+    transform: translate(229.289321881345%, 312.1320343559643%)
+      /* 3 - √2/2; 1 + √2*3/2 */
+      rotate(-45deg);
+  }
+
+  68%,
+  80% {
+    transform: translate(100%, 141.4213562373095%);
+    /* √2 */
+  }
+
+  88%,
+  100% {
+    transform: translate(141.4213562373095%, 141.4213562373095%)
+      /* √2 */
+      rotate(-45deg);
+  }
+}
+
+@keyframes anim-f7 {
+
+  8%,
+  20% {
+    transform: translate(50%, 150%) rotate(-45deg) scale(2.121320343559643, -0.7071067811865475);
+    /* √2*3/2; √2/2 */
+  }
+
+  28%,
+  40% {
+    transform: translate(212.1320343559643%, 212.1320343559643%)
+      /* √2*3/2 */
+      scale(2.121320343559643, 0.7071067811865475);
+  }
+
+  48%,
+  60% {
+    transform: translate(229.289321881345%, 100%)
+      /* 3 - √2/2 */
+      rotate(90deg) scale(2.121320343559643, -0.7071067811865475);
+  }
+
+  68%,
+  80% {
+    transform: translate(150%, 191.4213562373095%)
+      /* 0.5 + √2 */
+      rotate(135deg) scale(2.121320343559643, -0.7071067811865475);
+  }
+
+  88%,
+  100% {
+    transform: translate(0%, 212.1320343559643%)
+      /* √2*3/2 */
+      scale(2.121320343559643, 0.7071067811865475);
+    /* √2*3/2; √2/2 */
+  }
+}
+
+@keyframes load-finished-loader {
+  to {
+    visibility: hidden;
+  }
+}
+
+@keyframes load-finished-content {
+  50% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}

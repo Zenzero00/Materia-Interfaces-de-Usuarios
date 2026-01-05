@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Loader</title>
+
+    <link href="assets/css/loader.css" rel="stylesheet"/>
+  </head>
+<body>
+  <div class="loader">
+    <div>
+      <div class="tangram">
+        <div class="triangle ax4 f1" style="background-color: dodgerblue;"></div>
+        <div class="triangle ax4 f2" style="background-color: crimson;"></div>
+        <div class="triangle ax2 f3" style="background-color: blueviolet;"></div>
+        <div class="triangle f4" style="background-color: orangered;"></div>
+        <div class="triangle f5" style="background-color: darkcyan;"></div>
+        <div class="square f6" style="background-color: limegreen;"></div>
+        <div class="rhomboid f7" style="background-color: orange;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    setTimeout(() =>
+      document.querySelectorAll(".loader").forEach(loader => loader.classList.add("started")),
+    5000);
+  </script>
+</body>
+</html>
