@@ -52,10 +52,18 @@
         // Intercept all link clicks
         document.addEventListener('click', function (e) {
             const link = e.target.closest('a');
-            if (link && link.href && !link.href.startsWith('javascript:') && !link.href.startsWith('#')) {
-                // Check if it's an internal link (same origin)
+            if (link && link.href && !link.href.startsWith('javascript:')) {
+                // Skip hash links that stay on the same page (internal navigation)
                 const url = new URL(link.href);
-                if (url.origin === window.location.origin) {
+                const currentPath = window.location.pathname;
+
+                // If it's a hash link on the same page, don't show loader
+                if (url.hash && url.pathname === currentPath) {
+                    return; // Let the default behavior happen without loader
+                }
+
+                // Check if it's an internal link (same origin) navigating to a different page
+                if (url.origin === window.location.origin && url.pathname !== currentPath) {
                     e.preventDefault();
                     showLoaderAndNavigate(link.href);
                 }

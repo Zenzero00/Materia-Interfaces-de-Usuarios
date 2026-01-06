@@ -6,9 +6,16 @@
   height: 250px;
   /* Altura fija para uniformidad */
   width: 100%;
+  /* IMPORTANTE: Asegurar ancho completo */
+  display: block;
   background-color: #ddd;
   /* Fondo gris por si la imagen tarda en cargar */
   cursor: pointer;
+}
+
+/* Asegurar que los items del carrusel tengan ancho completo */
+.owl-carousel .item {
+  width: 100%;
 }
 
 .media-card img {
